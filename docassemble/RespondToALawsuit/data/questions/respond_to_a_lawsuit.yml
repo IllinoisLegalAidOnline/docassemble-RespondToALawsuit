@@ -565,7 +565,7 @@ fields:
   - ZIP code: x.address.zip
 ---
 #added to remove same as / someplace else default in ql_baseline.yml
-id: delivery party address
+id: users delivery party address
 sets:
   - users[i].address.address
   - users[i].address.city
