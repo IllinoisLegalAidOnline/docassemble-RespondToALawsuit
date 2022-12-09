@@ -51,8 +51,11 @@ code: |
   whats_next
   accept_terms
   lawsuit_information
-  eviction_check
-  small_claims_check
+  challenge_service
+  if eviction_case:
+    eviction_warning
+  elif small_claims_case:
+    small_claims_warning
   
   set_progress(15)
   nav.set_section('section_case_info')
@@ -69,7 +72,9 @@ code: |
   nav.set_section('section_answer')
   answer_intro
   answer_responses.gather()
-
+  if answer_responses.number() == 46:
+    max_paragraphs
+  
   set_progress(50)
   nav.set_section('section_delivery')
   delivery_intro
@@ -182,9 +187,9 @@ continue button field: lawsuit_information
 question: |
   Lawsuit information
 subquestion: |
-  If you received a Complaint or Petition and a Summons, you have been sued. You need to tell the court you want to participate in your case. In some cases, you need to file an **{Answer}** to respond to the Complaint or Petition.
-  
-  If you do not respond by the deadline, you can be found in default, and the court can rule against you. In some cases, like evictions, you do not need to file an **{Appearance}**. Instead, you can attend your court hearing.
+  If you received a Complaint or Petition and a Summons, you have been sued. You need to tell the court you want to participate in your case. You tell the court you are participating in the case by filing an **{Appearance}**. In some cases, you need to file an **{Answer}** to respond to the Complaint or Petition.
+
+  The Summons you received will tell you the deadline for filing your Appearance and Answer. If you do not respond by the deadline, you can be found in default, and the court can rule against you.
   
   Learn more about [**responding to a lawsuit**](https://www.illinoislegalaid.org/node/32236).
   
@@ -203,17 +208,59 @@ content: |
   
   Although you are not required to file an Answer before you go to court for these types of cases, the judge might order you to file an Answer after you go to court.
 ---
-id: eviction check
-continue button field: eviction_check
+id: challenge service
+continue button field: challenge_service
 question: |
-  Ask about eviction
----
-id: small claims check
-continue button field: small_claims_check
-question: |
-  Ask about small claims
+  Caution
+subquestion: |
+  **Note:** If you want to:
   
+  * Challenge the way the Summons and Complaint or Petition were received by you, also called service of process, or
+  * Dismiss the Complaint or Petition because it does not have a legal basis,
+  
+  Then you need to file a Motion **before** you file your Answer. Some of these actions are available only if you do them before you file your Answer.
 
+  You should talk with a lawyer about whether you have a legal reason to challenge how the Complaint or Petition was received or whether you have a legal reason to have it dismissed.
+  
+  If you would like help finding free or low-cost legal services in your area, use [**Get Legal Help**](https://www.illinoislegalaid.org/get-legal-help).
+---
+id: ask if eviction case
+question: |
+  Are you responding to an eviction lawsuit?
+fields:
+  - no label: eviction_case
+    datatype: yesnoradio
+---
+id: eviction warning
+continue button field: eviction_warning
+question: |
+  Written response optional in eviction
+subquestion: |
+  In an eviction, you must go to court but you are usually not required to file a written response.
+  
+  The judge might order you to file an Answer after you go to court.
+  
+  Learn more about [**understanding eviction as a tenant**](https://www.illinoislegalaid.org/legal-information/understanding-eviction-tenant).
+---
+id: ask if small claims case
+question: |
+  Are you being sued for $10,000 or less?
+subquestion: |
+  This lawsuit for money is called a small claims case.
+fields:
+  - no label: small_claims_case
+    datatype: yesnoradio
+---
+id: small claims warning
+continue button field: small_claims_warning
+question: |
+  Written response optional in small claims
+subquestion: |
+  In a small claims case, you must go to court but you are usually not required to file a written response.
+  
+  The judge might order you to file an Answer after you go to court.
+
+  Learn more about [**being sued for $10,000 or less**](https://www.illinoislegalaid.org/legal-information/being-sued-10000-or-less).
 ---
 id: any other users
 question: |
@@ -428,7 +475,7 @@ content: |
   * Everything on the forms is true and correct, and
   * You understand that making a false statement on the form is perjury.
 
-  See the **[Code of Civil Procedure, 735 ILCS 5/1-109**](https://www.ilga.gov/legislation/ilcs/documents/073500050k1-109.htm), for more information.
+  See the [**Code of Civil Procedure, 735 ILCS 5/1-109**](https://www.ilga.gov/legislation/ilcs/documents/073500050k1-109.htm), for more information.
 ---
 id: answer intro
 continue button field: answer_intro
@@ -439,11 +486,18 @@ subquestion: |
 
   Your options are:
   
-  * Admit,
-  * Deny, or
-  * Do not know.
+  * **{Admit}**,
+  * **{Deny}**, or
+  * **{Do not know}**.
   
-  The forms made by this program allow you to respond to up to 46 total paragraphs and subparagraphs.
+  The forms made by this program allow you to respond to up to 46 total paragraphs and subparagraphs. If you need to respond to more, download a blank [**Additional Paragraphs for Answer/Response**](https://www.illinoiscourts.gov/documents-and-forms/approved-forms/circuit-forms/answer-response). 
+terms:
+  Admit: |
+    You agree that all of the statements in the paragraph are true.
+  Deny: |
+    You disagree with any of the statements in the paragraph.
+  Do not know: |
+    You do not know if all of the statements in the paragraph are true or false. This means you do not have enough information to truthfully admit or deny the statements.
 ---
 id: answer responses
 sets:
@@ -461,15 +515,25 @@ fields:
   - Response: answer_responses[i].response
     input type: radio
     choices:
-      - Admit
-      - Deny
-      - Do not know
+      - Admit: Admit
+        help: |
+          You agree that all of the statements in the paragraph are true.
+      - Deny: Deny
+        help: |
+          You disagree with any of the statements in the paragraph.
+      - Do not know: Do not know
+        help: |
+          You do not know if all of the statements in the paragraph are true or false. This means you do not have enough information to truthfully admit or deny the statements.
 ---
 id: any other paragraphs
 question: |
   Are there any other paragraphs to respond to?
 subquestion: |
-  So far you have responded to paragraphs:
+  % if answer_responses.number() >= 45:
+  **Reminder:** This program can respond to up to 46 paragraphs.
+
+  % endif
+  So far you have responded to paragraphs and subparagraphs:
   
   % for paragraph in answer_responses:
     * ${ paragraph.para + paragraph.sub + " (" + paragraph.response + ")"}
@@ -482,11 +546,25 @@ code: |
   answer_responses[i].para
   answer_responses[i].response
   answer_responses[i].complete = True
+---
+depends on:
+  - answer_responses
+code: |
+  if answer_responses.number() == 46:
+    answer_responses.there_is_another = False
+---
+id: maximum paragraphs entered
+continue button field: max_paragraphs
+question: |
+  Paragraph limit
+subquestion: |
+  You have reached the maximum number of paragraphs you can respond to with this program. Here is what you entered:
+  
+  % for paragraph in answer_responses:
+    * ${ paragraph.para + paragraph.sub + " (" + paragraph.response + ")"}
+  % endfor
 
-
-
-
-
+  If you need to respond to more, download a blank [**Additional Paragraphs for Answer/Response**](https://www.illinoiscourts.gov/documents-and-forms/approved-forms/circuit-forms/answer-response). 
 ---
 reconsider: True
 code: |
