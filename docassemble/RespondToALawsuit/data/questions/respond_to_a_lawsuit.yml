@@ -90,7 +90,13 @@ code: |
       person.delivery_date
   
   for person in delivery_parties[:8]:
-    if person.knows_delivery_method == False or person.hand_delivery == True:
+    if person.knows_delivery_method == False or person.hand_delivery == True or \
+        (not showifdef('person.efm_delivery') and \
+        (not showifdef('person.email_delivery')) and \
+        (not showifdef('person.mail_delivery')) and \
+        (not showifdef('person.hand_delivery')) and \
+        (not showifdef('person.delivery_date')) and \
+        (not showifdef('person.delivery_time'))):
       hand_delivery_info
   e_signature
 
@@ -713,6 +719,8 @@ question: |
   How will you send your ${ form_name } to ${ users[i].name.full(middle="full") }?
   % endif
 subquestion: |  
+  **Note:** If you do not know this now, be sure to add it to the Proof of Delivery section of your forms later.
+  
   You may use US mail, a delivery company, or hand delivery if you or the other party **does not** have an email address.
   
   ${ collapse_template(efiling_help) }  
@@ -733,6 +741,24 @@ fields:
     datatype: yesnowide
   - Hand delivery: users[i].hand_delivery
     datatype: yesnowide
+  #- I don't know. I will add this information to the forms later.: users[i].delivery_method_idk
+  #  datatype: yesnowide
+  #  disable others: True
+#validation code: |
+#  if (not showifdef('users[i].efm_delivery') and \
+#      (not showifdef('users[i].email_delivery')) and \
+#      (not showifdef('users[i].mail_delivery')) and \
+#      (not showifdef('users[i].hand_delivery'))):
+#    users[i].knows_delivery_method = False
+#  else:
+#    users[i].knows_delivery_method = True
+# below validation_error not appearing
+#  if (not showifdef('users[i].efm_delivery') and \
+#      (not showifdef('users[i].email_delivery')) and \
+#      (not showifdef('users[i].mail_delivery')) and \
+#      (not showifdef('users[i].hand_delivery')) and \
+#      (not showifdef('users[i].delivery_method_idk'))):
+#    validation_error(word("Enter a delivery method, or choose I don\'t know."), field="users[i].delivery_method_idk")
 ---
 template: efiling_help
 subject: |
@@ -750,6 +776,8 @@ question: |
   How will you send your ${ form_name } to ${ other_parties[i].name.full(middle="full") }?
   % endif
 subquestion: |  
+  **Note:** If you do not know this now, be sure to add it to the Proof of Delivery section of your forms later.
+
   You may use US mail, a delivery company, or hand delivery if you or the other party **does not** have an email address.
   
   ${ collapse_template(efiling_help) }  
@@ -770,6 +798,17 @@ fields:
     datatype: yesnowide
   - Hand delivery: other_parties[i].hand_delivery
     datatype: yesnowide
+  #- I don't know. I will add this information to the forms later.: other_parties[i].delivery_method_idk
+  #  datatype: yesnowide
+  #  disable others: True
+#validation code: |
+#  if (not showifdef('other_parties[i].efm_delivery') and \
+#      (not showifdef('other_parties[i].email_delivery')) and \
+#      (not showifdef('other_parties[i].mail_delivery')) and \
+#      (not showifdef('other_parties[i].hand_delivery'))):
+#    other_parties[i].knows_delivery_method = False
+#  else:
+#    other_parties[i].knows_delivery_method = True
 ---
 id: delivery time
 generic object: ALIndividual
@@ -779,14 +818,37 @@ question: |
   % else:
   When will you send your ${ form_name } to ${ x.name.full(middle="full") }?
   % endif
+subquestion: |
+  **Note:** If you do not know this now, be sure to add it to the Proof of Delivery section of your forms later.
 fields:
   - Date: x.delivery_date
     datatype: date
-    default: ${ today().format("yyyy-MM-dd") }
+    required: False
+    #default: ${ today().format("yyyy-MM-dd") }
     min: ${ today().format("yyyy-MM-dd") }
     max: ${ today().plus(years=1) }
   - Time: x.delivery_time
     datatype: time
+    required: False
+  #- I don't know. I will add delivery date and time to the forms later.: x.delivery_time_idk
+    #datatype: yesno
+    #disable others: True
+#validation code: |
+#  if (not showifdef('x.delivery_date') and \
+#      (not showifdef('x.delivery_time'))):
+#      #(not showifdef('x.delivery_time_idk'))):
+#    x.knows_delivery_date = False
+#  else:
+#    x.knows_delivery_date = True
+    #validation_error(word("Enter a delivery date and time, or choose I don\'t know."), field="x.delivery_date")
+---
+depends on:
+  - delivery_parties[i].delivery_time
+code: |
+  if delivery_parties[i].knows_delivery_date == True and showifdef('delivery_parties[i].delivery_time'):
+    delivery_parties[i].knows_delivery_time == True
+  else:
+    delivery_parties[i].knows_delivery_time == False
 ---
 id: hand delivery info
 continue button field: hand_delivery_info
@@ -794,8 +856,7 @@ continue button field: hand_delivery_info
 question: |
   Complete your Proof of Delivery
 subquestion: |
-
-  Make sure you complete the Proof of Delivery section of your forms. 
+  **Don't forget!** Make sure you complete the Proof of Delivery section of your forms. 
   
   Instructions when delivering your forms by hand:
 
@@ -968,7 +1029,7 @@ attachment:
       - "is_delivery_party1_efm_yes": ${ delivery_parties[0].efm_delivery if delivery_parties[0].knows_delivery_method else '' }
       - "is_delivery_party1_email_yes": ${ delivery_parties[0].email_delivery if delivery_parties[0].knows_delivery_method else '' }
       - "delivery_party1_date": ${ delivery_parties[0].delivery_date if delivery_parties[0].knows_delivery_method else '' }
-      - "delivery_party1_time": ${ format_time(delivery_parties[0].delivery_time, format='h:mm') if delivery_parties[0].knows_delivery_method else '' }
+      - "delivery_party1_time": ${ format_time(delivery_parties[0].delivery_time, format='h:mm') if delivery_parties[0].knows_delivery_time else '' }
       - "is_delivery_party1_am_yes": ${ True if format_time(delivery_parties[0].delivery_time, format='a')=='AM' else '' }
       - "is_delivery_party1_am_no": ${ True if format_time(delivery_parties[0].delivery_time, format='a')=='PM' else '' }
 
@@ -985,7 +1046,7 @@ attachment:
       - "is_delivery_party2_efm_yes": ${ delivery_parties[1].efm_delivery if delivery_parties[1].knows_delivery_method else '' }
       - "is_delivery_party2_email_yes": ${ delivery_parties[1].email_delivery if delivery_parties[1].knows_delivery_method else '' }
       - "delivery_party2_date": ${ delivery_parties[1].delivery_date if delivery_parties[1].knows_delivery_method else '' }
-      - "delivery_party2_time": ${ format_time(delivery_parties[1].delivery_time, format='h:mm') if delivery_parties[1].knows_delivery_method else '' }
+      - "delivery_party2_time": ${ format_time(delivery_parties[1].delivery_time, format='h:mm') if delivery_parties[1].knows_delivery_time else '' }
       - "is_delivery_party2_am_yes": ${ True if format_time(delivery_parties[1].delivery_time, format='a')=='AM' else '' }
       - "is_delivery_party2_am_no": ${ True if format_time(delivery_parties[1].delivery_time, format='a')=='PM' else '' }
 
@@ -1018,7 +1079,7 @@ attachment:
       - "is_delivery_party1_efm_yes": ${ delivery_parties[2].efm_delivery if delivery_parties[2].knows_delivery_method else '' }
       - "is_delivery_party1_email_yes": ${ delivery_parties[2].email_delivery if delivery_parties[2].knows_delivery_method else '' }
       - "delivery_party1_date": ${ delivery_parties[2].delivery_date if delivery_parties[2].knows_delivery_method else '' }
-      - "delivery_party1_time": ${ format_time(delivery_parties[2].delivery_time, format='h:mm') if delivery_parties[2].knows_delivery_method else '' }
+      - "delivery_party1_time": ${ format_time(delivery_parties[2].delivery_time, format='h:mm') if delivery_parties[2].knows_delivery_time else '' }
       - "is_delivery_party1_am_yes": ${ True if format_time(delivery_parties[2].delivery_time, format='a')=='AM' else '' }
       - "is_delivery_party1_am_no": ${ True if format_time(delivery_parties[2].delivery_time, format='a')=='PM' else '' }
       
@@ -1035,7 +1096,7 @@ attachment:
       - "is_delivery_party2_efm_yes": ${ delivery_parties[3].efm_delivery if delivery_parties[3].knows_delivery_method else '' }
       - "is_delivery_party2_email_yes": ${ delivery_parties[3].email_delivery if delivery_parties[3].knows_delivery_method else '' }
       - "delivery_party2_date": ${ delivery_parties[3].delivery_date if delivery_parties[3].knows_delivery_method else '' }
-      - "delivery_party2_time": ${ format_time(delivery_parties[3].delivery_time, format='h:mm') if delivery_parties[3].knows_delivery_method else '' }
+      - "delivery_party2_time": ${ format_time(delivery_parties[3].delivery_time, format='h:mm') if delivery_parties[3].knows_delivery_time else '' }
       - "is_delivery_party2_am_yes": ${ True if format_time(delivery_parties[3].delivery_time, format='a')=='AM' else '' }
       - "is_delivery_party2_am_no": ${ True if format_time(delivery_parties[3].delivery_time, format='a')=='PM' else '' }
 
@@ -1074,7 +1135,7 @@ attachment:
       - "is_delivery_party1_efm_yes": ${ delivery_parties[4].efm_delivery if delivery_parties[4].knows_delivery_method else '' }
       - "is_delivery_party1_email_yes": ${ delivery_parties[4].email_delivery if delivery_parties[4].knows_delivery_method else '' }
       - "delivery_party1_date": ${ delivery_parties[4].delivery_date if delivery_parties[4].knows_delivery_method else '' }
-      - "delivery_party1_time": ${ format_time(delivery_parties[4].delivery_time, format='h:mm') if delivery_parties[4].knows_delivery_method else '' }
+      - "delivery_party1_time": ${ format_time(delivery_parties[4].delivery_time, format='h:mm') if delivery_parties[4].knows_delivery_time else '' }
       - "is_delivery_party1_am_yes": ${ True if format_time(delivery_parties[4].delivery_time, format='a')=='AM' else '' }
       - "is_delivery_party1_am_no": ${ True if format_time(delivery_parties[4].delivery_time, format='a')=='PM' else '' }
       
@@ -1091,7 +1152,7 @@ attachment:
       - "is_delivery_party2_efm_yes": ${ delivery_parties[5].efm_delivery if delivery_parties[5].knows_delivery_method else '' }
       - "is_delivery_party2_email_yes": ${ delivery_parties[5].email_delivery if delivery_parties[5].knows_delivery_method else '' }
       - "delivery_party2_date": ${ delivery_parties[5].delivery_date if delivery_parties[5].knows_delivery_method else '' }
-      - "delivery_party2_time": ${ format_time(delivery_parties[5].delivery_time, format='h:mm') if delivery_parties[5].knows_delivery_method else '' }
+      - "delivery_party2_time": ${ format_time(delivery_parties[5].delivery_time, format='h:mm') if delivery_parties[5].knows_delivery_time else '' }
       - "is_delivery_party2_am_yes": ${ True if format_time(delivery_parties[5].delivery_time, format='a')=='AM' else '' }
       - "is_delivery_party2_am_no": ${ True if format_time(delivery_parties[5].delivery_time, format='a')=='PM' else '' }
 
@@ -1130,7 +1191,7 @@ attachment:
       - "is_delivery_party1_efm_yes": ${ delivery_parties[6].efm_delivery if delivery_parties[6].knows_delivery_method else '' }
       - "is_delivery_party1_email_yes": ${ delivery_parties[6].email_delivery if delivery_parties[6].knows_delivery_method else '' }
       - "delivery_party1_date": ${ delivery_parties[6].delivery_date if delivery_parties[6].knows_delivery_method else '' }
-      - "delivery_party1_time": ${ format_time(delivery_parties[6].delivery_time, format='h:mm') if delivery_parties[6].knows_delivery_method else '' }
+      - "delivery_party1_time": ${ format_time(delivery_parties[6].delivery_time, format='h:mm') if delivery_parties[6].knows_delivery_time else '' }
       - "is_delivery_party1_am_yes": ${ True if format_time(delivery_parties[6].delivery_time, format='a')=='AM' else '' }
       - "is_delivery_party1_am_no": ${ True if format_time(delivery_parties[6].delivery_time, format='a')=='PM' else '' }
       
@@ -1147,7 +1208,7 @@ attachment:
       - "is_delivery_party2_efm_yes": ${ delivery_parties[7].efm_delivery if delivery_parties[7].knows_delivery_method else '' }
       - "is_delivery_party2_email_yes": ${ delivery_parties[7].email_delivery if delivery_parties[7].knows_delivery_method else '' }
       - "delivery_party2_date": ${ delivery_parties[7].delivery_date if delivery_parties[7].knows_delivery_method else '' }
-      - "delivery_party2_time": ${ format_time(delivery_parties[7].delivery_time, format='h:mm') if delivery_parties[7].knows_delivery_method else '' }
+      - "delivery_party2_time": ${ format_time(delivery_parties[7].delivery_time, format='h:mm') if delivery_parties[7].knows_delivery_time else '' }
       - "is_delivery_party2_am_yes": ${ True if format_time(delivery_parties[7].delivery_time, format='a')=='AM' else '' }
       - "is_delivery_party2_am_no": ${ True if format_time(delivery_parties[7].delivery_time, format='a')=='PM' else '' }
       
@@ -1348,7 +1409,7 @@ attachment:
       - "is_delivery_party1_efm_yes": ${ delivery_parties[0].efm_delivery if delivery_parties[0].knows_delivery_method else '' }
       - "is_delivery_party1_email_yes": ${ delivery_parties[0].email_delivery if delivery_parties[0].knows_delivery_method else '' }
       - "delivery_party1_date": ${ delivery_parties[0].delivery_date if delivery_parties[0].knows_delivery_method else '' }
-      - "delivery_party1_time": ${ format_time(delivery_parties[0].delivery_time, format='h:mm') if delivery_parties[0].knows_delivery_method else '' }
+      - "delivery_party1_time": ${ format_time(delivery_parties[0].delivery_time, format='h:mm') if delivery_parties[0].knows_delivery_time else '' }
       - "is_delivery_party1_am_yes": ${ True if format_time(delivery_parties[0].delivery_time, format='a')=='AM' else '' }
       - "is_delivery_party1_am_no": ${ True if format_time(delivery_parties[0].delivery_time, format='a')=='PM' else '' }
 
@@ -1365,7 +1426,7 @@ attachment:
       - "is_delivery_party2_efm_yes": ${ delivery_parties[1].efm_delivery if delivery_parties[1].knows_delivery_method else '' }
       - "is_delivery_party2_email_yes": ${ delivery_parties[1].email_delivery if delivery_parties[1].knows_delivery_method else '' }
       - "delivery_party2_date": ${ delivery_parties[1].delivery_date if delivery_parties[1].knows_delivery_method else '' }
-      - "delivery_party2_time": ${ format_time(delivery_parties[1].delivery_time, format='h:mm') if delivery_parties[1].knows_delivery_method else '' }
+      - "delivery_party2_time": ${ format_time(delivery_parties[1].delivery_time, format='h:mm') if delivery_parties[1].knows_delivery_time else '' }
       - "is_delivery_party2_am_yes": ${ True if format_time(delivery_parties[1].delivery_time, format='a')=='AM' else '' }
       - "is_delivery_party2_am_no": ${ True if format_time(delivery_parties[1].delivery_time, format='a')=='PM' else '' }
 
@@ -1622,7 +1683,12 @@ review:
   - Edit: x.delivery_date
     button: |
       **Delivery on:**
+      % if (not showifdef(x.delivery_date)) or (not showifdef(x.delivery_time)):
+      Incomplete date and time entered.
+      % else:
       ${ x.delivery_date } at ${ format_time(x.delivery_time, "h:mm a") }
+      % endif
+#      ${ x.delivery_date } at ${ format_time(x.delivery_time, "h:mm a") }
     show if: x.knows_delivery_method
 ---
 id: users review
