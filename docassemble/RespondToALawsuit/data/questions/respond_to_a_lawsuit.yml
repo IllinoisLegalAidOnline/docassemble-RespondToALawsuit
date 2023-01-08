@@ -89,15 +89,17 @@ code: |
       person.mail_delivery
       person.delivery_date
   
-  for person in delivery_parties[:8]:
-    if person.knows_delivery_method == False or person.hand_delivery == True or \
-        (not showifdef('person.efm_delivery') and \
-        (not showifdef('person.email_delivery')) and \
-        (not showifdef('person.mail_delivery')) and \
-        (not showifdef('person.hand_delivery')) and \
-        (not showifdef('person.delivery_date')) and \
-        (not showifdef('person.delivery_time'))):
-      hand_delivery_info
+  #for person in delivery_parties[:8]:
+  #  if person.knows_delivery_method == False or person.hand_delivery == True or \
+  #      (not showifdef('person.efm_delivery') and \
+  #      (not showifdef('person.email_delivery')) and \
+  #      (not showifdef('person.mail_delivery')) and \
+  #      (not showifdef('person.hand_delivery')) and \
+  #      (not showifdef('person.delivery_date')) and \
+  #      (not showifdef('person.delivery_time'))):
+  #    hand_delivery_info
+      
+  hand_delivery_info    
   e_signature
 
   set_progress(75)
@@ -830,41 +832,75 @@ fields:
   - Time: x.delivery_time
     datatype: time
     required: False
-  #- I don't know. I will add delivery date and time to the forms later.: x.delivery_time_idk
-    #datatype: yesno
-    #disable others: True
-#validation code: |
-#  if (not showifdef('x.delivery_date') and \
-#      (not showifdef('x.delivery_time'))):
-#      #(not showifdef('x.delivery_time_idk'))):
-#    x.knows_delivery_date = False
-#  else:
-#    x.knows_delivery_date = True
-    #validation_error(word("Enter a delivery date and time, or choose I don\'t know."), field="x.delivery_date")
----
-depends on:
-  - delivery_parties[i].delivery_time
-code: |
-  if delivery_parties[i].knows_delivery_date == True and showifdef('delivery_parties[i].delivery_time'):
-    delivery_parties[i].knows_delivery_time == True
+validation code: |
+  if (not showifdef('x.delivery_date')):
+    x.knows_delivery_date = False
   else:
-    delivery_parties[i].knows_delivery_time == False
+    x.knows_delivery_date = True
+  if (not showifdef('x.delivery_time')):
+    x.knows_delivery_time = False
+  else:
+    x.knows_delivery_time = True
+#validation_error(word("Enter a delivery date and time, or choose I don\'t know."), field="x.delivery_date")
+---
+#generic object: ALIndividual
+#sets:
+#  - x.knows_delivery_date
+#depends on:
+#  - x.delivery_date
+#code: |
+#  if showifdef('x.delivery_date') and x.knows_delivery_method:
+#    x.knows_delivery_date == True
+#  else:
+#    x.knows_delivery_date == False
+#---
+#generic object: ALIndividual
+#sets:
+#  - x.knows_delivery_time
+#depends on:
+#  - x.delivery_time
+#  
+#code: |
+#  if showifdef('x.delivery_time') and x.knows_delivery_method:
+#    x.knows_delivery_time == True
+#  else:
+#    x.knows_delivery_time == False
+#sets:
+#  - delivery_parties[i].knows_delivery_time
+#depends on:
+#  - delivery_parties[i].delivery_time
+#  
+#code: |
+#  if showifdef('delivery_parties[i].delivery_time') and delivery_parties[i].knows_delivery_method:
+#    delivery_parties[i].knows_delivery_time == True
+#  else:
+#    delivery_parties[i].knows_delivery_time == False
 ---
 id: hand delivery info
 continue button field: hand_delivery_info
-#generic object: ALIndividual
 question: |
-  Complete your Proof of Delivery
+  Check your Proof of Delivery
 subquestion: |
-  **Don't forget!** Make sure you complete the Proof of Delivery section of your forms. 
+  **Don't forget!** Make sure you review and complete the Proof of Delivery section of your forms. 
   
-  Instructions when delivering your forms by hand:
+  [FILE proof_of_delivery_snip.png, 100%, Proof of Delivery section of forms]
+
+  **Instructions when delivering your forms by hand:**
 
   * If a party in your case does not have a lawyer, you can hand-deliver the forms to them or to a family member who is 13 or older at their home.
   * If they do have a lawyer, you can hand-deliver the forms to the lawyer or to the lawyer's office.
   
-  [FILE proof_of_delivery_snip.png, 100%, Proof of Delivery section of forms]
-
+#question: |
+#  Complete your Proof of Delivery
+#subquestion: |
+#  **Don't forget!** Make sure you complete the Proof of Delivery section of your forms. 
+#  
+#  Instructions when delivering your forms by hand:
+#
+#  * If a party in your case does not have a lawyer, you can hand-deliver the forms to them or to a family member who is 13 or older at their home.
+#  * If they do have a lawyer, you can hand-deliver the forms to the lawyer or to the lawyer's office.
+#  
+#  [FILE proof_of_delivery_snip.png, 100%, Proof of Delivery section of forms]
 ---
 id: get docs screen
 event: get_docs_screen
@@ -1683,13 +1719,14 @@ review:
   - Edit: x.delivery_date
     button: |
       **Delivery on:**
-      % if (not showifdef(x.delivery_date)) or (not showifdef(x.delivery_time)):
-      Incomplete date and time entered.
-      % else:
+      % if x.knows_delivery_date == True and x.knows_delivery_time == True:
       ${ x.delivery_date } at ${ format_time(x.delivery_time, "h:mm a") }
+      % else:
+      Incomplete date and time entered.
       % endif
-#      ${ x.delivery_date } at ${ format_time(x.delivery_time, "h:mm a") }
     show if: x.knows_delivery_method
+#      % if (not showifdef(x.delivery_date)) or (not showifdef(x.delivery_time)):
+#      ${ x.delivery_date } at ${ format_time(x.delivery_time, "h:mm a") }
 ---
 id: users review
 continue button field: users.revisit
