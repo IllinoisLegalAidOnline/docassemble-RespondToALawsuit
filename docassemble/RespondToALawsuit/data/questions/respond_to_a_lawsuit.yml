@@ -1,7 +1,7 @@
 metadata:
   title: Respond to a lawsuit
   short title: Respond to a lawsuit
-  comment: This program helps you respond to a lawsuit by telling the court and the other parties that you are participating in a court case. It also makes an Answer that tells how you respond to what is written in the complaint or petition.
+  comment: This program helps you respond to a lawsuit by telling the court and the other parties that you are participating in a court case. It can make a Jury Request if you want a jury and a judge to decide your case. It also makes an Answer that tells how you respond to what is written in the complaint or petition.
   authors:
     - Matt Newsted
 ---
@@ -13,8 +13,10 @@ include:
 objects:
   - users: ALPeopleList.using(there_are_any=True)
   - users[i].lawyer: ALIndividual
+  - users[i].hand_delivery_address: ALAddress
   - other_parties: ALPeopleList.using(there_are_any=True)
   - other_parties[i].lawyer: ALIndividual
+  - other_parties[i].hand_delivery_address: ALAddress
   - delivery_parties: ALPeopleList.using(there_are_any=True)
   - delivery_parties[i].lawyer: ALIndividual
   - answer_responses: DAList.using(object_type=DAObject, complete_attribute=['complete'], there_are_any=True)
@@ -652,9 +654,13 @@ question: |
 subquestion: |
   These are the other parties in this case: ${comma_and_list(delivery_parties)}.
 
-  You must send a copy of your ${ form_name } to each of them.
+  % if trial_with == "Judge only":
+  You must send a copy of your *Appearance* and *Answer* forms to each of them.
+  % else:
+  You must send a copy of your *Appearance*, *Jury Request*, and *Answer* forms to each of them.
+  % endif
 
-  If someone in the case has a lawyer, you only need to send it to their lawyer.
+  If someone in the case has a lawyer, you only need to send them to their lawyer.
 ---
 id: has lawyer
 generic object: ALIndividual
@@ -883,10 +889,6 @@ fields:
   - E-filing system: other_parties[i].efm_delivery
     datatype: yesnowide
     help: |
-      The court's e-filing system could be an electronic filing manager (EFM) or an approved electronic filing service provider (EFSP).
-  - E-filing system: other_parties[i].efm_delivery
-    datatype: yesnowide
-    help: |
       The court's e-filing system could be any approved electronic filing service provider (EFSP).
   - Email: other_parties[i].email_delivery
     datatype: yesnowide
@@ -1105,7 +1107,7 @@ content: |
 ---
 objects:
   - appearance_attachment: ALDocument.using(title="Appearance", filename="appearance.pdf", has_addendum=False)
-  - appearance_instructions: ALDocument.using(title="Instructions", filename="instructions.pdf", has_addendum=False)
+  - appearance_instructions: ALDocument.using(title="Instructions for Appearance and Jury Request", filename="instructions.pdf", has_addendum=False)
   - jury_request: ALDocument.using(title="Jury Request", filename="jury_request.pdf", has_addendum=False)
 
   - illinois_answer_attachment: ALDocument.using(title="Answer", filename="answer.pdf", has_addendum=False)
@@ -1222,7 +1224,7 @@ objects:
 objects:
   - appearance_single_pdf_bundle: ALDocumentBundle.using(elements=[appearance_attachment, additional_delivery_bundle], filename="appearance.pdf", title="Appearance", enabled=True)
   - jury_request_bundle: ALDocumentBundle.using(elements=[jury_request, additional_delivery_bundle], filename="jury_request.pdf", title="Jury Request")
-  - illinois_answer_bundle: ALDocumentBundle.using(elements=[illinois_answer_attachment, illinois_answer_additional, illinois_appearance_additional, illinois_appearance_additional_2, illinois_appearance_additional_3], filename="answer.pdf", title="Answer", enabled=True)
+  - illinois_answer_bundle: ALDocumentBundle.using(elements=[illinois_answer_attachment, illinois_answer_additional], filename="answer.pdf", title="Answer", enabled=True)
 ---
 ---
 attachment:
