@@ -20,6 +20,8 @@ objects:
   - delivery_parties: ALPeopleList.using(there_are_any=True)
   - delivery_parties[i].lawyer: ALIndividual
   - answer_responses: DAList.using(object_type=DAObject, complete_attribute=['complete'], there_are_any=True)
+  - defenses: DAList.using(object_type=Thing, complete_attribute='complete', there_are_any=True)
+  - claims: DAList.using(object_type=Thing, complete_attribute='complete', there_are_any=True)
   - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts.xlsx')
 ---
 code: |
@@ -37,6 +39,7 @@ sections:
   - section_intro: Start
   - section_case_info: Case info
   - section_answer: Responses
+  - section_defenses: Affirmative defenses and Counterclaims (optional)
   - section_delivery: Delivery details
   - section_about_you: About you
   - section_download: Download  
@@ -68,6 +71,7 @@ code: |
   if in_re_check == True:
     in_re_label
   set_progress(30)
+  complaint_title
   trial_court
   case_number
   trial_with
@@ -77,10 +81,26 @@ code: |
   set_progress(40)
   nav.set_section('section_answer')
   answer_intro
-  answer_responses.gather()
-  if answer_responses.number() == 35:
-    max_paragraphs
-  
+  if complaint_labeled:
+    answer_responses.gather()
+    if answer_responses.number() == 35:
+      max_paragraphs
+  else:
+    unlabeled_intro
+    if not general_denial:
+      unlabeled_admit
+      unlabeled_idk
+
+  set_progress(50)
+  nav.set_section('section_defenses')
+
+  defenses_intro
+  if has_defenses:
+    defenses.gather()
+  counterclaims_intro
+  if has_counterclaims:
+    claims.gather()
+
   set_progress(60)
   nav.set_section('section_delivery')
   delivery_intro
@@ -184,7 +204,7 @@ question: |
 subquestion: |
   After you download your **{Appearance}**, **{Jury Request}**, and **{Answer}** forms, you must file them with the court. This program does not file your forms for you.
   
-  Read the "How to Prepare and Send an Answer/Response to Complaint/Petition" instructions you can download at the end of this program. 
+  Read the "How to File an Appearance or Request a Jury" and "How to Answer or Respond to a Court Case" instructions you can download at the end of this program. 
 ---
 terms:
   - "Jury Request": |
@@ -547,7 +567,7 @@ question: |
 subquestion: |
   You should respond to every statement in the Complaint or Petition you received. Respond in the order that they appear.
   
-  If the paragraphs are labeled by number or letter, your responses should be labeled like the statements in the Complaint or Petition. This program will help you keep track of your responses.
+  If the paragraphs are labeled by number or letter, your responses should be labeled like the statements in the Complaint or Petition.
 
   Your options are:
   
@@ -629,7 +649,197 @@ subquestion: |
     * ${ paragraph.para + paragraph.sub + " (" + paragraph.response + ")"}
   % endfor
 
-  If you need to respond to more, download a blank [**Additional Paragraphs for Answer/Response**](https://www.illinoiscourts.gov/documents-and-forms/approved-forms/circuit-forms/answer-response). 
+  If you need to respond to more, download a blank [**Additional Paragraphs for Answer/Response**](https://www.illinoiscourts.gov/documents-and-forms/approved-forms/circuit-forms/answer-response).
+---
+id: complaint title
+question: |
+  What is the title of the Complaint or Petition filed against you?
+subquestion: |
+  The title tells you what kind of lawsuit was filed. This is usually listed near the top of the Complaint or Petition.
+  
+  Examples of titles are Complaint at Law or Petition for Dissolution of Marriage.
+fields:
+  - Title of Complaint or Petition: complaint_title
+    maxlength: 40
+---
+id: statements labeled
+question: |
+  Are the statements in the Complaint or Petition labeled?
+subquestion: |
+  In other words, do they have numbers and letters like this:
+  
+  1. Jane Smith, Plaintiff, lives at 123 S. Main Street, Anytown, IL.
+  2. Mary Jones, Defendant, lives at 900 E. Oak Avenue, Anytown, IL.
+  3. On March 3, ${int(format_date(today(), format="yyyy"))-1}, Plaintiff signed a contract with Defendant.
+  [NEWLINE]A. A copy of the contract is attached.
+  [NEWLINE]B. No money was exchanged between the parties when the contract was signed.
+  
+  If they are labeled by number and letter, you can respond to them by each label. If they are not labeled, you can respond to each sentence separately.  
+fields:
+  - Statements labeled?: complaint_labeled
+    datatype: yesnoradio
+---
+id: unlabeled intro
+continue button field: unlabeled_intro
+question: |
+  Deny by default
+subquestion: |  
+  Since the Complaint or Petition you are responding to does not have paragraphs labeled by number or letter, you can respond to each statement one-by one.
+  
+  It is easiest to deny everything in the Complaint or Petition, and list only the statements that you admit are true or do not know if they are true.
+  
+  The next screens will help you do that.
+---
+id: general denial
+question: |
+  Do you want to deny all statements in the Complaint or Petition?
+subquestion: |
+  This is called a general denial.
+fields:
+  - no label: general_denial
+    datatype: radio
+    choices:
+      - Yes, I want to deny all the statements in the Complaint or Petition.: True
+      - No, there are some statements I admit are true or I don't know.: False
+---
+id: unableled statements idk
+question: |
+  Which statements in the Complaint or Petition do you admit are true?
+subquestion: |
+  List each statement from the Complaint or Petition that you know are true.
+  
+  On the next screens, you can list the statements that you don't know are true.
+fields:
+  - Statements you admit are true:: unlabeled_admit
+    input type: area
+    rows: 6
+  - Are there more statements you admit are true?: more_admit
+    datatype: yesnoradio
+---
+id: unableled statements admit
+question: |
+  Which statements in the Complaint or Petition do you not know if they are true?
+subquestion: |
+  List each statement from the Complaint or Petition that you don't know if they are true. This includes statements you do not have enough information about.
+fields:
+  - Statements you do not know are true:: unlabeled_idk
+    input type: area
+    rows: 6
+  - Are there more statements you admit are true?: more_idk
+    datatype: yesnoradio
+ 
+---
+id: affirmative defenses intro
+continue button field: defenses_intro
+question: |
+  Affirmative defenses
+subquestion: |  
+  EXPLAIN AFF DEF HERE
+
+  **Note:** You will be responsible for proving any affirmative defense you bring up.
+---  
+id: any affirmative defenses
+question: |
+  Do you have any affirmative defenses?
+subquestion: |  
+  You can enter details about your affirmative defenses on the next screens.  
+fields:
+  Any affirmative defenses?: has_defenses
+  datatype: yesnoradio
+---
+id: affirmative defense details
+question: |
+  Affirmative defense details
+subquestion: |
+  Enter details about your affirmative defense.
+fields:
+  - Short name or description of the affirmative defense: defenses[i].name.text
+    maxlength: 60
+  - Facts that support your defense:: defenses[i].details
+    input type: area
+    rows: 10
+    maxlength: 500
+---
+id: any other defenses
+question: |
+  Do you have other affirmative defenses?
+subquestion: |
+  
+  You can enter up to 3 additional affirmative defenses. So far you have told us about:
+  
+  % for defense in defenses:
+   * ${defense.name.text}
+  % endfor
+fields:
+  - "Add another affirmative defense?": defenses.there_is_another
+    datatype: yesnoradio
+---
+code: |
+  defenses[i].name.text
+  defenses[i].complete = True
+---
+code: |
+  if defenses.number_gathered() >= 3:
+    defenses.there_is_another = False  
+---
+id: counterclaims intro
+continue button field: counterclaims_intro
+question: |
+  Counterclaims
+subquestion: |
+  A counterclaim is like a new lawsuit.
+
+  You will have to state facts to explain what you are claiming. You will have to prove these facts at trial.
+  
+  There will likely be fees to file your counterclaims.
+---
+id: any counterclaims
+question: |
+  Do you have any counterclaims?
+subquestion: |  
+  
+fields:
+  Any counterclaims?: has_counterclaims
+  datatype: yesnoradio  
+---
+id: counterclaim details
+question: |
+  Counterclaim details
+subquestion: |
+  Enter details about your counterclaim.
+  
+  The forms have space for up to 3 separate counterclaims.
+fields:
+  - State what you are claiming and the facts that support your claims:: claims[i].name.text
+    input type: area
+    rows: 10
+    maxlength: 500
+  - List what you want the court to order:: claims[i].details
+    input type: area
+    rows: 6
+    maxlength: 275
+---
+id: any other counterclaims
+question: |
+  Do you have other counterclaims?
+subquestion: |
+  
+  You can enter up to 5 counterclaims. So far you have told us about:
+  
+  % for claim in claims:
+   * ${claim.name.text}
+  % endfor
+fields:
+  - "Add another counterclaim?": claims.there_is_another
+    datatype: yesnoradio
+---
+code: |
+  claims[i].name.text
+  claims[i].complete = True
+---
+code: |
+  if claims.number_gathered() >= 3:
+    claims.there_is_another = False
 ---
 reconsider: True
 code: |
@@ -1110,8 +1320,8 @@ objects:
   - appearance_instructions: ALDocument.using(title="Instructions for Appearance and Jury Request", filename="instructions.pdf", has_addendum=False)
   - jury_request: ALDocument.using(title="Jury Request", filename="jury_request.pdf", has_addendum=False)
 
-  - illinois_answer_attachment: ALDocument.using(title="Answer", filename="answer.pdf", has_addendum=False)
-  - illinois_answer_instructions: ALDocument.using(title="Instructions for Answer", filename="answer_instructions.pdf", has_addendum=False)
+  - answer_attachment: ALDocument.using(title="Answer or Response", filename="answer.pdf", has_addendum=False)
+  - answer_instructions: ALDocument.using(title="Instructions for Answer or Response", filename="answer_instructions.pdf", has_addendum=False)
   - illinois_answer_additional: ALDocument.using(title="Additional Paragraphs for Answer", filename="answer_additional.pdf", has_addendum=False)
 
   #- illinois_appearance_attachment: ALDocument.using(title="Appearance", filename="appearance.pdf", has_addendum=False)
@@ -1169,17 +1379,13 @@ code: |
     jury_request.enabled = True
     jury_request_bundle.enabled = True
 
-  illinois_answer_attachment.enabled = False
-  illinois_answer_instructions.enabled = False
+  answer_attachment.enabled = True
+  answer_instructions.enabled = True
   illinois_answer_additional.enabled = False
 
-  if answer_responses.number() < 25:
-    illinois_answer_attachment.enabled = True
-    illinois_answer_instructions.enabled = True
-  else:
-    illinois_answer_attachment.enabled = True
-    illinois_answer_instructions.enabled = True
-    illinois_answer_additional.enabled = True
+  if complaint_labeled:
+    if answer_responses.number() > 15:
+      illinois_answer_additional.enabled = True
 
 ---
 #code: |
@@ -1218,13 +1424,13 @@ code: |
    
 ---
 objects:
-  - al_user_bundle: ALDocumentBundle.using(elements=[appearance_instructions, appearance_single_pdf_bundle, jury_request_bundle, illinois_answer_instructions, illinois_answer_bundle], filename="appearance_and_answer.pdf", title="All forms")
+  - al_user_bundle: ALDocumentBundle.using(elements=[appearance_instructions, appearance_single_pdf_bundle, jury_request_bundle, answer_instructions, illinois_answer_bundle], filename="appearance_and_answer.pdf", title="All forms")
   - al_court_bundle: ALDocumentBundle.using(elements=[appearance_single_pdf_bundle, jury_request_bundle, illinois_answer_bundle], filename="appearance_and_answer.pdf", title="Appearance and Answer")
 ---
 objects:
   - appearance_single_pdf_bundle: ALDocumentBundle.using(elements=[appearance_attachment, additional_delivery_bundle], filename="appearance.pdf", title="Appearance", enabled=True)
   - jury_request_bundle: ALDocumentBundle.using(elements=[jury_request, additional_delivery_bundle], filename="jury_request.pdf", title="Jury Request")
-  - illinois_answer_bundle: ALDocumentBundle.using(elements=[illinois_answer_attachment, illinois_answer_additional], filename="answer.pdf", title="Answer", enabled=True)
+  - illinois_answer_bundle: ALDocumentBundle.using(elements=[answer_attachment, illinois_answer_additional], filename="answer.pdf", title="Answer or Response", enabled=True)
 ---
 ---
 attachment:
@@ -1533,8 +1739,8 @@ attachment:
 
 ---
 attachment:
-  variable name: illinois_answer_instructions[i]
-  name: illinois_answer_instructions
+  variable name: answer_instructions[i]
+  name: answer_instructions
   filename: answer-instructions
   skip undefined: True
   editable: False
@@ -1543,21 +1749,48 @@ attachment:
       - "fake": ${ "" }
 ---
 attachment:
-  variable name: illinois_answer_attachment[i]
-  name: illinois_answer_attachment
+  variable name: answer_attachment[i]
+  name: answer_attachment
   filename: answer
   skip undefined: True
   editable: False
   pdf template file: answer.pdf
   fields:
       - "trial_court_county": ${ trial_court.address.county.upper() }
-      - "plaintiffs": ${ users.full_names() if user_ask_role == 'plaintiff' else other_parties.full_names() }
-      - "defendants": ${ other_parties.full_names() if user_ask_role == 'plaintiff' else users.full_names() }
+      - "plaintiffs": |
+          % if in_re_check:
+          ${ in_re_label }
+          % else:
+          % if user_ask_role == 'plaintiff':
+          % if users.number() > 1:
+          ${ users[0].name.full(middle="full") }, et al.
+          % else:
+          ${ users[0].name.full(middle="full") }
+          % endif
+          % else:
+          % if other_parties.number() > 1:
+          ${ other_parties[0].name.full(middle="full") }, et al.
+          % else:
+          ${ other_parties[0].name.full(middle="full") }
+          % endif
+          % endif
+          % endif
+      
+      - "defendants": |
+          % if in_re_check:
+          ${ "" }
+          % else:
+          % if user_ask_role == 'plaintiff':
+          ${ other_parties.full_names() } 
+          % else:
+          ${ users.full_names() }
+          % endif
+          % endif
       - "user__1": ${ users[0].name.full(middle="full") }
       - "user__2": ${ users[0].name.full(middle="full") }
       - "user__3": ${ users[0].name.full(middle="full") }
-      - "user_mail_address_line_one__1": ${ users[0].address.line_one(bare=True) }
-      - "user_mail_address_line_one__2": ${ users[0].address.line_one(bare=True) }
+      - "user_mail_address_one_line__1": ${ users[0].address.on_one_line(bare=True) }
+      - "user_mail_address_one_line__2": ${ users[0].address.on_one_line(bare=True) }
       - "user_mail_address_city_state_zip__1": ${ users[0].address.line_two() }
       - "user_mail_address_city_state_zip__2": ${ users[0].address.line_two() }
       - "user_phone_number__1": ${ phone_number_formatted(users[0].phone_number) }
@@ -1567,6 +1800,10 @@ attachment:
       - "case_number__1": ${ case_number }
       - "case_number__2": ${ case_number }
       - "case_number__3": ${ case_number }
+      - "case_number__4": ${ case_number }
+      - "case_number__5": ${ case_number }
+      - "e_sign_name__1": ${ users[0].name.full(middle="full") if e_signature else '' }
+      - "e_sign_name__2": ${ users[0].name.full(middle="full") if e_signature else '' }
       
       - "para0": ${ answer_responses[0].para }
       - "sub0": ${ answer_responses[0].sub }
@@ -1643,62 +1880,35 @@ attachment:
       - "admit14": ${ True if answer_responses[14].response == "Admit" else False }
       - "deny14": ${ True if answer_responses[14].response == "Deny" else False }
       - "idk14": ${ True if answer_responses[14].response == "Do not know" else False }
-      - "para15": ${ answer_responses[15].para }
-      - "sub15": ${ answer_responses[15].sub }
-      - "admit15": ${ True if answer_responses[15].response == "Admit" else False }
-      - "deny15": ${ True if answer_responses[15].response == "Deny" else False }
-      - "idk15": ${ True if answer_responses[15].response == "Do not know" else False }
-      - "para16": ${ answer_responses[16].para }
-      - "sub16": ${ answer_responses[16].sub }
-      - "admit16": ${ True if answer_responses[16].response == "Admit" else False }
-      - "deny16": ${ True if answer_responses[16].response == "Deny" else False }
-      - "idk16": ${ True if answer_responses[16].response == "Do not know" else False }
-      - "para17": ${ answer_responses[17].para }
-      - "sub17": ${ answer_responses[17].sub }
-      - "admit17": ${ True if answer_responses[17].response == "Admit" else False }
-      - "deny17": ${ True if answer_responses[17].response == "Deny" else False }
-      - "idk17": ${ True if answer_responses[17].response == "Do not know" else False }
-      - "para18": ${ answer_responses[18].para }
-      - "sub18": ${ answer_responses[18].sub }
-      - "admit18": ${ True if answer_responses[18].response == "Admit" else False }
-      - "deny18": ${ True if answer_responses[18].response == "Deny" else False }
-      - "idk18": ${ True if answer_responses[18].response == "Do not know" else False }
-      - "para19": ${ answer_responses[19].para }
-      - "sub19": ${ answer_responses[19].sub }
-      - "admit19": ${ True if answer_responses[19].response == "Admit" else False }
-      - "deny19": ${ True if answer_responses[19].response == "Deny" else False }
-      - "idk19": ${ True if answer_responses[19].response == "Do not know" else False }
-      - "para20": ${ answer_responses[20].para }
-      - "sub20": ${ answer_responses[20].sub }
-      - "admit20": ${ True if answer_responses[20].response == "Admit" else False }
-      - "deny20": ${ True if answer_responses[20].response == "Deny" else False }
-      - "idk20": ${ True if answer_responses[20].response == "Do not know" else False }
-      - "para21": ${ answer_responses[21].para }
-      - "sub21": ${ answer_responses[21].sub }
-      - "admit21": ${ True if answer_responses[21].response == "Admit" else False }
-      - "deny21": ${ True if answer_responses[21].response == "Deny" else False }
-      - "idk21": ${ True if answer_responses[21].response == "Do not know" else False }
-      - "para22": ${ answer_responses[22].para }
-      - "sub22": ${ answer_responses[22].sub }
-      - "admit22": ${ True if answer_responses[22].response == "Admit" else False }
-      - "deny22": ${ True if answer_responses[22].response == "Deny" else False }
-      - "idk22": ${ True if answer_responses[22].response == "Do not know" else False }
-      - "para23": ${ answer_responses[23].para }
-      - "sub23": ${ answer_responses[23].sub }
-      - "admit23": ${ True if answer_responses[23].response == "Admit" else False }
-      - "deny23": ${ True if answer_responses[23].response == "Deny" else False }
-      - "idk23": ${ True if answer_responses[23].response == "Do not know" else False }
-      - "para24": ${ answer_responses[24].para }
-      - "sub24": ${ answer_responses[24].sub }
-      - "admit24": ${ True if answer_responses[24].response == "Admit" else False }
-      - "deny24": ${ True if answer_responses[24].response == "Deny" else False }
-      - "idk24": ${ True if answer_responses[24].response == "Do not know" else False }
-
       - "is_additional_answer": ${ answer_responses.number() > 24 }
-      - "e_sign_name__1": ${ users[0].name.full(middle="full") if e_signature else '' }
-      - "e_sign_name__2": ${ users[0].name.full(middle="full") if e_signature else '' }
-      #- "is_email_notice_yes": ${ users[0].email_notice }
 
+      - "user_is_plaintiff": ${ '' }
+      - "user_is_defendant": ${ True }
+      - "complaint_title": ${ complaint_title }
+      - "complaint_labeled_yes": ${ complaint_labeled }
+      - "complaint_labeled_no": ${ not complaint_labeled }
+      - "unlabeled_admit": ${ unlabeled_admit if not general_denial else '' }
+      - "unlabeled_idk": ${ unlabeled_idk if not general_denial else '' }
+      - "is_additional_unlabeled_answer": ${ True if not general_denial and (more_admit == True or more_idk == True) else '' }
+      - "has_affirmative_defenses": ${ has_defenses }
+      - "has_counterclaims": ${ has_counterclaims }
+      - "answer_pod_docs__1": |
+          Answer or Response
+          % if has_defenses:
+          , Affirmative Defenses
+          % endif
+          % if has_counterclaims:
+          , Counterclaims
+          % endif
+      - "answer_pod_docs__2": |
+          Answer or Response
+          % if has_defenses:
+          , Affirmative Defenses
+          % endif
+          % if has_counterclaims:
+          , Counterclaims
+          % endif
+          
       - "delivery_party1_name_full": | 
           % if delivery_parties[0].is_represented:
           ${ delivery_parties[0].lawyer.name.full(middle="full") }, (lawyer for ${ delivery_parties[0].name.full(middle="full") })
@@ -1712,10 +1922,15 @@ attachment:
       - "is_delivery_party1_efm_yes": ${ delivery_parties[0].efm_delivery if delivery_parties[0].knows_delivery_method else '' }
       - "is_delivery_party1_email_yes": ${ delivery_parties[0].email_delivery if delivery_parties[0].knows_delivery_method else '' }
       - "delivery_party1_date": ${ delivery_parties[0].delivery_date if delivery_parties[0].knows_delivery_method and delivery_parties[0].knows_delivery_date else '' }
-      - "delivery_party1_time": ${ format_time(delivery_parties[0].delivery_time, format='h:mm') if delivery_parties[0].knows_delivery_method and delivery_parties[0].knows_delivery_time else '' }
-      - "is_delivery_party1_am_yes": ${ True if delivery_parties[0].knows_delivery_method and format_time(delivery_parties[0].delivery_time, format='a')=='AM' else '' }
-      - "is_delivery_party1_am_no": ${ True if delivery_parties[0].knows_delivery_method and format_time(delivery_parties[0].delivery_time, format='a')=='PM' else '' }
-
+      - "delivery_party1_time": ${ format_time(delivery_parties[0].delivery_time, format='h:mm a') if delivery_parties[0].knows_delivery_method and delivery_parties[0].knows_delivery_time else '' }
+      
+      - "is_delivery_party1_electronic": ${ True if delivery_parties[0].knows_delivery_method and ( delivery_parties[0].efm_delivery or delivery_parties[0].email_delivery ) else '' }
+      - "is_delivery_party1_not_electronic": ${ True if delivery_parties[0].knows_delivery_method and ( delivery_parties[0].mail_delivery or delivery_parties[0].hand_delivery or delivery_parties[0].jail_delivery ) else '' }
+      - "delivery_party1_mail_city": ${ delivery_parties[0].delivery_mail_city if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery else '' }
+      - "delivery_party1_mail_state": ${ state_name(delivery_parties[0].delivery_mail_state) if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery else '' }
+      - "delivery_party1_hand_address": ${ delivery_parties[0].hand_delivery_address.on_one_line(bare=True) if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery else '' }
+      - "is_delivery_party1_jail_yes": ${ True if delivery_parties[0].knows_delivery_method and delivery_parties[0].jail_delivery else '' }
+      - "delivery_party1_jail_name": ${ delivery_parties[0].delivery_jail_name if delivery_parties[0].knows_delivery_method and delivery_parties[0].jail_delivery else '' }
       - "delivery_party2_name_full": | 
           % if delivery_parties[1].is_represented:
           ${ delivery_parties[1].lawyer.name.full(middle="full") }, (lawyer for ${ delivery_parties[1].name.full(middle="full") })
@@ -1729,9 +1944,15 @@ attachment:
       - "is_delivery_party2_efm_yes": ${ delivery_parties[1].efm_delivery if delivery_parties[1].knows_delivery_method else '' }
       - "is_delivery_party2_email_yes": ${ delivery_parties[1].email_delivery if delivery_parties[1].knows_delivery_method else '' }
       - "delivery_party2_date": ${ delivery_parties[1].delivery_date if delivery_parties[1].knows_delivery_method and delivery_parties[1].knows_delivery_date else '' }
-      - "delivery_party2_time": ${ format_time(delivery_parties[1].delivery_time, format='h:mm') if delivery_parties[1].knows_delivery_method and delivery_parties[1].knows_delivery_time else '' }
-      - "is_delivery_party2_am_yes": ${ True if delivery_parties[1].knows_delivery_method and format_time(delivery_parties[1].delivery_time, format='a')=='AM' else '' }
-      - "is_delivery_party2_am_no": ${ True if delivery_parties[1].knows_delivery_method and format_time(delivery_parties[1].delivery_time, format='a')=='PM' else '' }
+      - "delivery_party2_time": ${ format_time(delivery_parties[1].delivery_time, format='h:mm a') if delivery_parties[1].knows_delivery_method and delivery_parties[1].knows_delivery_time else '' }
+      
+      - "is_delivery_party2_electronic": ${ True if delivery_parties[1].knows_delivery_method and ( delivery_parties[1].efm_delivery or delivery_parties[1].email_delivery ) else '' }
+      - "is_delivery_party2_not_electronic": ${ True if delivery_parties[1].knows_delivery_method and ( delivery_parties[1].mail_delivery or delivery_parties[1].hand_delivery or delivery_parties[1].jail_delivery ) else '' }
+      - "delivery_party2_mail_city": ${ delivery_parties[1].delivery_mail_city if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery else '' }
+      - "delivery_party2_mail_state": ${ state_name(delivery_parties[1].delivery_mail_state) if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery else '' }
+      - "delivery_party2_hand_address": ${ delivery_parties[1].hand_delivery_address.on_one_line(bare=True) if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery else '' }
+      - "is_delivery_party2_jail_yes": ${ True if delivery_parties[1].knows_delivery_method and delivery_parties[1].jail_delivery else '' }
+      - "delivery_party2_jail_name": ${ delivery_parties[1].delivery_jail_name if delivery_parties[1].knows_delivery_method and delivery_parties[1].jail_delivery else '' }
 
       - "is_additional_proof_delivery_yes": ${ delivery_parties.number() > 2 }
 
