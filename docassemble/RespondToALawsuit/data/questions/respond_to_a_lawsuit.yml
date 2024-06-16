@@ -1235,7 +1235,7 @@ fields:
       is: 'other'
 validation code: |
   if not (pronouns_none or pronouns == "She/her" or pronouns == "He/him" or pronouns == "They/them" or pronouns == "other"):
-    validation_error("Please select one.", field="pronouns")
+    validation_error("Please select at least one.", field="pronouns")
 ---
 id: prefix
 question: |
@@ -1262,7 +1262,7 @@ fields:
       is: 'other'
 validation code: |
   if not (prefix_none or prefix == "Ms." or prefix == "Mrs." or prefix == "Mr." or prefix == "Mx." or prefix == "other" ):
-    validation_error("Please select one.", field="prefix")
+    validation_error("Please select at least one.", field="prefix")
 ---
 id: forms assembling
 continue button field: forms_assembling
@@ -1322,7 +1322,7 @@ objects:
 
   - answer_attachment: ALDocument.using(title="Answer or Response", filename="answer.pdf", has_addendum=False)
   - answer_instructions: ALDocument.using(title="Instructions for Answer or Response", filename="answer_instructions.pdf", has_addendum=False)
-  - illinois_answer_additional: ALDocument.using(title="Additional Paragraphs for Answer", filename="answer_additional.pdf", has_addendum=False)
+  - answer_additional: ALDocument.using(title="Additional Paragraphs for Answer", filename="answer_additional.pdf", has_addendum=False)
 
   #- illinois_appearance_attachment: ALDocument.using(title="Appearance", filename="appearance.pdf", has_addendum=False)
   #- illinois_appearance_instructions: ALDocument.using(title="Instructions for Appearance", filename="instructions.pdf", has_addendum=False)
@@ -1381,11 +1381,12 @@ code: |
 
   answer_attachment.enabled = True
   answer_instructions.enabled = True
-  illinois_answer_additional.enabled = False
+  answer_additional.enabled = False
 
+  # adjust this logic to include more unlabeled admit or idk
   if complaint_labeled:
     if answer_responses.number() > 15:
-      illinois_answer_additional.enabled = True
+      answer_additional.enabled = True
 
 ---
 #code: |
@@ -1424,14 +1425,13 @@ code: |
    
 ---
 objects:
-  - al_user_bundle: ALDocumentBundle.using(elements=[appearance_instructions, appearance_single_pdf_bundle, jury_request_bundle, answer_instructions, illinois_answer_bundle], filename="appearance_and_answer.pdf", title="All forms")
-  - al_court_bundle: ALDocumentBundle.using(elements=[appearance_single_pdf_bundle, jury_request_bundle, illinois_answer_bundle], filename="appearance_and_answer.pdf", title="Appearance and Answer")
+  - al_user_bundle: ALDocumentBundle.using(elements=[appearance_instructions, appearance_single_pdf_bundle, jury_request_bundle, answer_instructions, answer_bundle], filename="appearance_and_answer.pdf", title="All forms")
+  - al_court_bundle: ALDocumentBundle.using(elements=[appearance_single_pdf_bundle, jury_request_bundle, answer_bundle], filename="appearance_and_answer.pdf", title="Appearance and Answer")
 ---
 objects:
   - appearance_single_pdf_bundle: ALDocumentBundle.using(elements=[appearance_attachment, additional_delivery_bundle], filename="appearance.pdf", title="Appearance", enabled=True)
   - jury_request_bundle: ALDocumentBundle.using(elements=[jury_request, additional_delivery_bundle], filename="jury_request.pdf", title="Jury Request")
-  - illinois_answer_bundle: ALDocumentBundle.using(elements=[answer_attachment, illinois_answer_additional], filename="answer.pdf", title="Answer or Response", enabled=True)
----
+  - answer_bundle: ALDocumentBundle.using(elements=[answer_attachment, answer_additional, additional_delivery_bundle], filename="answer.pdf", title="Answer or Response", enabled=True)
 ---
 attachment:
   variable name: appearance_instructions[i]
@@ -1958,8 +1958,8 @@ attachment:
 
 ---
 attachment:
-  variable name: illinois_answer_additional[i]
-  name: illinois_answer_additional
+  variable name: answer_additional[i]
+  name: answer_additional
   filename: answer_additional
   skip undefined: True
   editable: False
