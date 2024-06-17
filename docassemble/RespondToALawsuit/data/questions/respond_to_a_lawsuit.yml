@@ -693,18 +693,20 @@ id: unableled statements idk
 question: |
   Which statements in the Complaint or Petition do you admit are true?
 subquestion: |
-  List each statement from the Complaint or Petition that you know are true.
+  If you know that a statement in the Complaint or Petition is true, list it here.
   
-  On the next screens, you can list the statements that you don't know are true.
+  On the next screen, you can list the statements that you don't know are true.
 fields:
   - Statements you admit are true:: unlabeled_admit
     input type: area
-    rows: 6
+    rows: 12
+    maxlength: 600
   - Are there more statements you admit are true?: more_admit
     datatype: yesnoradio
   - More statements you admit are true:: unlabeled_admit_more
     input type: area
-    rows: 6
+    rows: 12
+    maxlength: 600
     show if:
       variable: more_admit
       is: True
@@ -713,16 +715,18 @@ id: unableled statements admit
 question: |
   Which statements in the Complaint or Petition do you not know if they are true?
 subquestion: |
-  List each statement from the Complaint or Petition that you don't know if they are true. This includes statements you do not have enough information about.
+  If you do not know if a statement in the Complaint or Petition is true, list it here. This includes statements you do not have enough information about.
 fields:
   - Statements you do not know are true:: unlabeled_idk
     input type: area
-    rows: 6
+    rows: 12
+    maxlength: 600
   - Are there more statements you admit are true?: more_idk
     datatype: yesnoradio
   - More statements you do not know are true:: unlabeled_idk_more
     input type: area
-    rows: 6
+    rows: 12
+    maxlength: 600
     show if:
       variable: more_idk
       is: True
@@ -752,18 +756,18 @@ subquestion: |
   Enter details about your affirmative defense.
 fields:
   - Short name or description of the affirmative defense: defenses[i].name.text
-    maxlength: 60
+    maxlength: 75
   - Facts that support your defense:: defenses[i].details
     input type: area
-    rows: 10
-    maxlength: 500
+    rows: 11
+    maxlength: 625
 ---
 id: any other defenses
 question: |
-  Do you have other affirmative defenses?
+  Do you have another affirmative defense?
 subquestion: |
   
-  You can enter up to 3 additional affirmative defenses. So far you have told us about:
+  You can enter up to 3 affirmative defenses. So far you have told us about:
   
   % for defense in defenses:
    * ${defense.name.text}
@@ -806,23 +810,23 @@ question: |
 subquestion: |
   Enter details about your counterclaim.
   
-  The forms have space for up to 3 separate counterclaims.
+  The forms have space for up to 3 counterclaims.
 fields:
   - State what you are claiming and the facts that support your claims:: claims[i].name.text
     input type: area
-    rows: 10
-    maxlength: 500
+    rows: 12
+    maxlength: 625
   - List what you want the court to order:: claims[i].details
     input type: area
-    rows: 6
-    maxlength: 275
+    rows: 7
+    maxlength: 300
 ---
 id: any other counterclaims
 question: |
-  Do you have other counterclaims?
+  Do you have another counterclaim?
 subquestion: |
   
-  You can enter up to 5 counterclaims. So far you have told us about:
+  You can enter up to 3 counterclaims. So far you have told us about:
   
   % for claim in claims:
    * ${claim.name.text}
@@ -1325,6 +1329,10 @@ objects:
   - answer_instructions: ALDocument.using(title="Instructions for Answer or Response", filename="answer_instructions.pdf", has_addendum=False)
   - answer_additional: ALDocument.using(title="Additional Paragraphs for Answer", filename="answer_additional.pdf", has_addendum=False)
 
+  - affirmative_defenses: ALDocument.using(title="Affirmative Defenses", filename="affirmative_defenses.pdf", has_addendum=False)
+  - counterclaims: ALDocument.using(title="Counterclaims", filename="counterclaims.pdf", has_addendum=False)
+
+
   #- illinois_appearance_attachment: ALDocument.using(title="Appearance", filename="appearance.pdf", has_addendum=False)
   #- illinois_appearance_instructions: ALDocument.using(title="Instructions for Appearance", filename="instructions.pdf", has_addendum=False)
   #- illinois_appearance_additional: ALDocument.using(title="Additional Proof of Delivery", filename="appearance_additional_proof_delivery.pdf", has_addendum=False)
@@ -1388,6 +1396,18 @@ code: |
   if complaint_labeled:
     if answer_responses.number() > 15:
       answer_additional.enabled = True
+  else:
+    if more_admit or more_idk:
+      answer_additional.enabled = True
+
+  affirmative_defenses.enabled = False
+  counterclaims.enabled = False
+
+  if has_defenses:
+    affirmative_defenses.enabled = True
+
+  if has_counterclaims:
+    counterclaims.enabled = True
 
 ---
 #code: |
@@ -1426,8 +1446,8 @@ code: |
    
 ---
 objects:
-  - al_user_bundle: ALDocumentBundle.using(elements=[appearance_instructions, appearance_single_pdf_bundle, jury_request_bundle, answer_instructions, answer_bundle], filename="appearance_and_answer.pdf", title="All forms")
-  - al_court_bundle: ALDocumentBundle.using(elements=[appearance_single_pdf_bundle, jury_request_bundle, answer_bundle], filename="appearance_and_answer.pdf", title="Appearance and Answer")
+  - al_user_bundle: ALDocumentBundle.using(elements=[appearance_instructions, appearance_single_pdf_bundle, jury_request_bundle, answer_instructions, answer_bundle, affirmative_defenses, counterclaims], filename="appearance_and_answer.pdf", title="All forms")
+  - al_court_bundle: ALDocumentBundle.using(elements=[appearance_single_pdf_bundle, jury_request_bundle, answer_bundle, affirmative_defenses, counterclaims], filename="appearance_and_answer.pdf", title="Appearance and Answer")
 ---
 objects:
   - appearance_single_pdf_bundle: ALDocumentBundle.using(elements=[appearance_attachment, additional_delivery_bundle], filename="appearance.pdf", title="Appearance", enabled=True)
@@ -2024,8 +2044,117 @@ attachment:
       - "unlabeled_admit_more": ${ unlabeled_admit_more if not complaint_labeled and more_admit else '' }
       - "unlabeled_idk_more": ${ unlabeled_idk_more if not complaint_labeled and more_idk else '' }
       - "is_additional_unlabeled_answer": ${ True if not complaint_labeled and (more_admit == True or more_idk == True) else '' }
-
 ---
+attachment:
+  variable name: affirmative_defenses[i]
+  name: affirmative_defenses
+  filename: affirmative_defenses
+  skip undefined: True
+  editable: False
+  pdf template file: affirmative_defenses.pdf
+  fields:
+      - "trial_court_county": ${ trial_court.address.county.upper() }
+      - "plaintiffs": |
+          % if in_re_check:
+          ${ in_re_label }
+          % else:
+          % if user_ask_role == 'plaintiff':
+          % if users.number() > 1:
+          ${ users[0].name.full(middle="full") }, et al.
+          % else:
+          ${ users[0].name.full(middle="full") }
+          % endif
+          % else:
+          % if other_parties.number() > 1:
+          ${ other_parties[0].name.full(middle="full") }, et al.
+          % else:
+          ${ other_parties[0].name.full(middle="full") }
+          % endif
+          % endif
+          % endif
+      
+      - "defendants": |
+          % if in_re_check:
+          ${ "" }
+          % else:
+          % if user_ask_role == 'plaintiff':
+          ${ other_parties.full_names() } 
+          % else:
+          ${ users.full_names() }
+          % endif
+          % endif
+      - "user__2": ${ users[0].name.full(middle="full") }
+      - "user_mail_address_one_line__1": ${ users[0].address.on_one_line(bare=True) }
+      - "user_mail_address_city_state_zip__1": ${ users[0].address.line_two() }
+      - "user_phone_number__1": ${ phone_number_formatted(users[0].phone_number) }
+      - "user_email": ${ users[0].email if users[0].email_notice else '' }
+      - "case_number__1": ${ case_number }
+      - "case_number__2": ${ case_number }
+      - "e_sign_name__1": ${ users[0].name.full(middle="full") if e_signature else '' }
+      - "defense_0_name": ${ defenses[0].name.text }
+      - "defense_0_details": ${ defenses[0].details }
+      - "defense_1_name": ${ defenses[1].name.text }
+      - "defense_1_details": ${ defenses[1].details }
+      - "defense_2_name": ${ defenses[2].name.text }
+      - "defense_2_details": ${ defenses[2].details }
+---
+attachment:
+  variable name: counterclaims[i]
+  name: counterclaims
+  filename: counterclaims
+  skip undefined: True
+  editable: False
+  pdf template file: counterclaims.pdf
+  fields:
+      - "trial_court_county": ${ trial_court.address.county.upper() }
+      - "plaintiffs": |
+          % if in_re_check:
+          ${ in_re_label }
+          % else:
+          % if user_ask_role == 'plaintiff':
+          % if users.number() > 1:
+          ${ users[0].name.full(middle="full") }, et al.
+          % else:
+          ${ users[0].name.full(middle="full") }
+          % endif
+          % else:
+          % if other_parties.number() > 1:
+          ${ other_parties[0].name.full(middle="full") }, et al.
+          % else:
+          ${ other_parties[0].name.full(middle="full") }
+          % endif
+          % endif
+          % endif
+      
+      - "defendants": |
+          % if in_re_check:
+          ${ "" }
+          % else:
+          % if user_ask_role == 'plaintiff':
+          ${ other_parties.full_names() } 
+          % else:
+          ${ users.full_names() }
+          % endif
+          % endif
+      - "user__2": ${ users[0].name.full(middle="full") }
+      - "user_mail_address_one_line__1": ${ users[0].address.on_one_line(bare=True) }
+      - "user_mail_address_city_state_zip__1": ${ users[0].address.line_two() }
+      - "user_phone_number__1": ${ phone_number_formatted(users[0].phone_number) }
+      - "user_email": ${ users[0].email if users[0].email_notice else '' }
+      - "case_number__1": ${ case_number }
+      - "case_number__2": ${ case_number }
+      - "e_sign_name__1": ${ users[0].name.full(middle="full") if e_signature else '' }
+      - "claim_0_name": ${ claims[0].name.text }
+      - "claim_0_details": ${ claims[0].details }
+      - "claim_1_name": ${ claims[1].name.text }
+      - "claim_1_details": ${ claims[1].details }
+      - "claim_2_name": ${ claims[2].name.text }
+      - "claim_2_details": ${ claims[2].details }
+      
+      
+      
+---
+
 
 ############### Review page
 id: review screen
@@ -2057,6 +2186,10 @@ review:
     button: |
       **In re:** ${in_re_label}
     show if: in_re_check
+  - Edit: complaint_title
+    button: |
+      **Title of the Complaint or Petition:**
+      ${ complaint_title }       
   - Edit: 
       - trial_court_index
       - recompute:
@@ -2072,6 +2205,10 @@ review:
     button: |
       **Trial type:**
       ${ trial_with }
+  - Edit: complaint_labeled
+    button: |
+      **Are the statements in the Complaint or Petition labeled?**
+      ${ word(yesno(complaint_labeled)) }
   - Edit: answer_responses.revisit
     button: |
       **Your responses: (Edit to change paragaph, subparagraph, and response)**
@@ -2079,6 +2216,61 @@ review:
       % for paragraph in answer_responses:
         * ${ paragraph.para + paragraph.sub + " (" + paragraph.response + ")"}
       % endfor
+    show if: complaint_labeled
+  - Edit: unlabeled_admit
+    button: |
+      **Unlabeled statements you admit are true:**
+      ${ unlabeled_admit }
+    show if: not complaint_labeled
+  - Edit: more_admit
+    button: |
+      **Are there more unlabeled statements you admit are true?**
+      ${ word(yesno(more_admit)) }
+    show if: not complaint_labeled
+  - Edit: unlabeled_admit_more
+    button: |
+      **More unlabeled statements you admit are true:**
+      ${ unlabeled_admit_more }
+    show if: more_admit and not complaint_labeled
+  - Edit: unlabeled_idk
+    button: |
+      **Unlabeled statements you do not know if they are true:**
+      ${ unlabeled_idk }
+    show if: not complaint_labeled
+  - Edit: more_idk
+    button: |
+      **Are there more unlabeled statements you do not know if they are true?**
+      ${ word(yesno(more_idk)) }
+    show if: not complaint_labeled
+  - Edit: unlabeled_idk_more
+    button: |
+      **More unlabeled statements you do not know if they are true:**
+      ${ unlabeled_idk_more }
+    show if: more_idk and not complaint_labeled
+  - Edit: has_defenses
+    button: |
+      **Do you have any affirmative defenses?**
+      ${ word(yesno(has_defenses)) }
+  - Edit: defenses.revisit
+    button: |
+      **Affirmative defenses: (Edit to change details)**
+
+      % for my_var in defenses:
+        * ${ my_var.name.text }
+      % endfor
+    show if: has_defenses
+  - Edit: has_counterclaims
+    button: |
+      **Do you have any counterclaims?**
+      ${ word(yesno(has_counterclaims)) }
+  - Edit: claims.revisit
+    button: |
+      **Counterclaims: (Edit to change details)**
+
+      % for my_var in claims:
+        * ${ my_var.name.text }
+      % endfor
+    show if: has_counterclaims
   - Edit: e_signature
     button: |
       **Do you want to add your e-signature to your forms?**
@@ -2200,7 +2392,7 @@ review:
       % endif
     show if: x.knows_delivery_method
 ---
-id: users review
+id: users review screen
 continue button field: users.revisit
 question: |
   Edit the ${ user_ask_role }s
@@ -2219,7 +2411,7 @@ columns:
 delete buttons: True
 confirm: True
 ---
-id: other parties review
+id: other parties review screen
 continue button field: other_parties.revisit
 question: |
   % if user_ask_role == "plaintiff":
@@ -2242,7 +2434,7 @@ columns:
 delete buttons: True
 confirm: True
 ---
-id: answers review
+id: answers review screen
 continue button field: answer_responses.revisit
 question: |
   Edit your responses
@@ -2313,6 +2505,10 @@ review:
     button: |
       **In re:** ${in_re_label}
     show if: in_re_check
+  - Edit: complaint_title
+    button: |
+      **Title of the Complaint or Petition:**
+      ${ complaint_title }       
   - Edit: 
       - trial_court_index
       - recompute:
@@ -2336,6 +2532,10 @@ question: |
 subquestion: |
   Edit your answers below.
 review:
+  - Edit: complaint_labeled
+    button: |
+      **Are the statements in the Complaint or Petition labeled?**
+      ${ word(yesno(complaint_labeled)) }
   - Edit: answer_responses.revisit
     button: |
       **Your responses: (Edit to change paragaph, subparagraph, and response)**
@@ -2343,6 +2543,119 @@ review:
       % for paragraph in answer_responses:
         * ${ paragraph.para + paragraph.sub + " (" + paragraph.response + ")"}
       % endfor
+    show if: complaint_labeled
+  - Edit: unlabeled_admit
+    button: |
+      **Unlabeled statements you admit are true:**
+      ${ unlabeled_admit }
+    show if: not complaint_labeled
+  - Edit: more_admit
+    button: |
+      **Are there more unlabeled statements you admit are true?**
+      ${ word(yesno(more_admit)) }
+    show if: not complaint_labeled
+  - Edit: unlabeled_admit_more
+    button: |
+      **More unlabeled statements you admit are true:**
+      ${ unlabeled_admit_more }
+    show if: more_admit and not complaint_labeled
+  - Edit: unlabeled_idk
+    button: |
+      **Unlabeled statements you do not know if they are true:**
+      ${ unlabeled_idk }
+    show if: not complaint_labeled
+  - Edit: more_idk
+    button: |
+      **Are there more unlabeled statements you do not know if they are true?**
+      ${ word(yesno(more_idk)) }
+    show if: not complaint_labeled
+  - Edit: unlabeled_idk_more
+    button: |
+      **More unlabeled statements you do not know if they are true:**
+      ${ unlabeled_idk_more }
+    show if: more_idk and not complaint_labeled
+---
+id: counterclaims section review screen
+event: section_defenses
+section: Affirmative defenses and Counterclaims (optional)
+question: |
+  Affirmative defenses and Counterclaims
+subquestion: |
+  Edit your answers below.
+review:
+  - Edit: has_defenses
+    button: |
+      **Do you have any affirmative defenses?**
+      ${ word(yesno(has_defenses)) }
+  - Edit: defenses.revisit
+    button: |
+      **Affirmative defenses: (Edit to change details)**
+
+      % for my_var in defenses:
+        * ${ my_var.name.text }
+      % endfor
+    show if: has_defenses
+
+  - Edit: has_counterclaims
+    button: |
+      **Do you have any counterclaims?**
+      ${ word(yesno(has_counterclaims)) }
+  - Edit: claims.revisit
+    button: |
+      **Counterclaims: (Edit to change details)**
+
+      % for my_var in claims:
+        * ${ my_var.name.text }
+      % endfor
+    show if: has_counterclaims
+---
+id: defenses revisit review screen
+continue button field: defenses.revisit
+question: |
+  Edit the affirmative defenses
+subquestion: |
+  ${ defenses.table }
+
+  % if defenses.number_gathered() < 3:
+  ${ defenses.add_action() }
+  % endif
+---
+table: defenses.table
+rows: defenses
+columns:
+  - Affirmative defense (short name): |
+      row_item.name.text if defined("row_item.name.text") else ""
+  - Description and supporting facts: |
+      action_button_html(url_action(row_item.attr_name("name.text")), label="Edit", icon="pencil-alt")
+delete buttons: True
+confirm: True
+
+---
+id: counterclaims revisit review screen
+continue button field: claims.revisit
+question: |
+  Edit the counterclaims
+subquestion: |
+  ${ claims.table }
+
+  % if claims.number_gathered() < 3:
+  ${ claims.add_action() }
+  % endif
+---
+table: claims.table
+rows: claims
+columns:
+  - Your claim and supporting facts: |
+      row_item.name.text if defined("row_item.name.text") else ""
+  - What you are asking the court to order: |
+      action_button_html(url_action(row_item.attr_name("name.text")), label="Edit", icon="pencil-alt")
+delete buttons: True
+confirm: True
+
+
+
+
+
 ---
 id: delivery info review screen
 event: section_delivery
