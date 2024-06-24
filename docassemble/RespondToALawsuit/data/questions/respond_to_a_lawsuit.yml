@@ -139,7 +139,12 @@ code: |
   	'start_time': str(current_datetime().format_datetime()),
   	'started_interview': True, 
   	}
-    
+
+  try:
+    stuff_to_snapshot['ip_address'] = device(ip=True)
+  except:
+    pass
+
   stuff_to_snapshot['zip'] = showifdef('users[0].address.zip')
 
   stuff_to_snapshot['downloaded_forms'] = showifdef('forms_assembling')
@@ -163,9 +168,13 @@ question: |
 subquestion: |
   Welcome to Illinois Legal Aid Online's **Respond to a lawsuit** Easy Form.
 
-  This program helps you respond to a lawsuit by making an *Appearance* form that tells the court and the other parties that you are participating in a court case. It can make a *Jury Request* if you want a jury and a judge to decide your case.
-
-  It also makes an *Answer* form that tells the court and the other parties how you respond to what is written in the complaint or petition.
+  If you received a Complaint or Petition and a Summons, you have been sued. This program helps you respond to a lawsuit. It makes different forms depending on how you want to respond. Some forms are optional.
+  
+  * An *Appearance* tells the court and the other parties that you are participating in the court case.
+  * A *Jury Request* is used if you want a jury and a judge to decide your case.
+  * An *Answer* tells the court and the other parties how you respond to what is written in the Complaint or Petition.
+  * *Affirmative Defenses* tell the court and the other parties why you should win the case even if everything in the Complaint or Petition is true.
+  * *Counterclaims* are your separate legal claims against the parties that sued you.
   
   To learn more, read ILAO's article about [**responding to a lawsuit**](https://www.illinoislegalaid.org/node/32236).
 field: sees_nav_bar
@@ -203,11 +212,17 @@ question: |
 subquestion: |
   After you download your **{Appearance}**, **{Jury Request}**, and **{Answer}** forms, you must file them with the court. This program does not file your forms for you.
   
+  If you have **{Affirmative Defenses}** or **{Counterclaims}**, you must file those forms with the court as well.
+  
   Read the "How to File an Appearance or Request a Jury" and "How to Answer or Respond to a Court Case" instructions you can download at the end of this program. 
 ---
 terms:
   - "Jury Request": |
       A Jury Request tells the court you want a trial with a judge and a jury. It is also called a Jury demand.
+  - "Affirmative Defenses": |
+      Affirmative Defenses tell the court and the other parties why you should win the case even if everything in the Complaint or Petition is true.
+  - "Counterclaims": |
+      Counterclaims are your separate legal claims against the parties that sued you.
 ---
 id: lawsuit information
 continue button field: lawsuit_information
@@ -344,12 +359,14 @@ sets:
 id: other users names
 question: |
   % if al_form_type in ['starts_case','existing_case','appeal']:
-  What is the name of the ${ ordinal(i) } person who is part of the case with you?
+  What is the name of the ${ ordinal(i) } person who is on your side of the case?
   % else:
   What is the name of the ${ ordinal(i) } person who is adding their name to
   this form with you?
   % endif
 subquestion: |
+  If you are being sued, you are the **defendant** or **respondent**. Other parties that are being sued with you are on your side of this case.
+
   ${ collapse_template(long_name_help) }
 fields:
   - code: |
@@ -401,6 +418,8 @@ id: trial court county
 continue button field: case_county
 question: |
   In which county was this case filed?
+subquestion: |
+  This should be listed near the top on your court papers.
 fields:
   - no label: trial_court_index
     datatype: integer
@@ -530,11 +549,13 @@ id: e-signature
 question: |
   Do you want to add your e-signature to your forms?
 subquestion: |
+  This program can put “**/s/ ${users[0].name.full(middle='full')}**” where you would sign your name. The court will accept this as your signature.
+
   If you do not add your **{e-signature}**, you must sign your paper forms before you file and deliver them.
 
   <div class="alert alert-info ilao-info" role="alert">
     <h6 class="alert-heading">What it means to sign your forms</h6>
-    <p>By signing your <i>Appearance</i>,  <i>Jury Request</i>, and <i>Answer</i>, you are certifying that:</p>
+    <p>By signing your court forms you are certifying that:</p>
     <p><ul>
       <li>Everything on the forms is true and correct, and</li>
       <li>You understand that making a false statement on the form is perjury, which can result in criminal penalties.</li>
@@ -574,7 +595,7 @@ subquestion: |
   * **{Deny}**, or
   * **{Do not know}**.
   
-  The forms made by this program allow you to respond to up to 25 labeled paragraphs and subparagraphs. If you need to respond to more, download a blank [**Additional Paragraphs for Answer/Response**](https://www.illinoiscourts.gov/documents-and-forms/approved-forms/circuit-forms/answer-response). 
+  The forms made by this program allow you to respond to up to 25 labeled paragraphs and subparagraphs. If you need to respond to more, download a blank [**Additional Paragraphs for Answer or Response**](https://www.illinoiscourts.gov/documents-and-forms/approved-forms/circuit-forms/answer-response). 
 terms:
   Admit: |
     You agree that **all** of the statements in the paragraph are true.
@@ -656,7 +677,7 @@ question: |
 subquestion: |
   The title tells you what kind of lawsuit was filed. This is usually listed near the top of the Complaint or Petition.
   
-  Examples of titles are Complaint at Law or Petition for Dissolution of Marriage.
+  Examples of titles are *Complaint at Law* or *Petition for Dissolution of Marriage*.
 fields:
   - Title of Complaint or Petition: complaint_title
     maxlength: 40
@@ -673,7 +694,7 @@ subquestion: |
   [NEWLINE]A. A copy of the contract is attached.
   [NEWLINE]B. No money was exchanged between the parties when the contract was signed.
   
-  If they are labeled by number and letter, you can respond to them by each label. If they are not labeled, you can respond to each sentence separately.  
+  If they are labeled by number or letter, you can respond to them by each label. If they are not labeled, you can respond to each sentence separately.  
 fields:
   - Statements labeled?: complaint_labeled
     datatype: yesnoradio
@@ -685,15 +706,22 @@ question: |
 subquestion: |  
   Since the Complaint or Petition you are responding to does not have paragraphs labeled by number or letter, you can respond to each statement one-by one.
   
-  It is easiest to deny most statements in the Complaint or Petition, and list only the statements that you admit are true or do not know if they are true.
+  It is easiest to **{deny}** most statements in the Complaint or Petition, and list only the statements that you **{admit}** are true or **{do not know}** if they are true.
   
   The next screens will help you do that.
+terms:
+  admit: |
+    You agree that the statement is true.
+  deny: |
+    You disagree with the statement. It is not true.
+  do not know: |
+    You do not know the statement is true or false. This means you do not have enough information to truthfully admit or deny the statement. 
 ---
 id: unableled statements idk
 question: |
   Which statements in the Complaint or Petition do you admit are true?
 subquestion: |
-  If you know that a statement in the Complaint or Petition is true, list it here.
+  If you know that a statement in the Complaint or Petition is **true**, list it here.
   
   On the next screen, you can list the statements that you don't know are true.
 fields:
@@ -715,7 +743,7 @@ id: unableled statements admit
 question: |
   Which statements in the Complaint or Petition do you not know if they are true?
 subquestion: |
-  If you do not know if a statement in the Complaint or Petition is true, list it here. This includes statements you do not have enough information about.
+  If you **do not know** if a statement in the Complaint or Petition is true or false, list it here. This includes statements you do not have enough information about.
 fields:
   - Statements you do not know are true:: unlabeled_idk
     input type: area
@@ -736,9 +764,11 @@ continue button field: defenses_intro
 question: |
   Affirmative defenses
 subquestion: |  
-  EXPLAIN AFF DEF HERE
-
-  **Note:** You will be responsible for proving any affirmative defense you bring up.
+  Affirmative defenses are reasons why the Plaintiff should not win the case even if everything in the Eviction Complaint is true.
+  
+  An affirmative defense is not the same as saying "I did nothing wrong." Instead, it is telling the court: "even if you think the Plaintiff is right, I should win because I have this defense."
+  
+  **Note:** You will have to prove your affirmative defenses in court with evidence such as documents.
 ---  
 id: any affirmative defenses
 question: |
@@ -815,7 +845,7 @@ fields:
   - State what you are claiming and the facts that support your claims:: claims[i].name.text
     input type: area
     rows: 12
-    maxlength: 625
+    maxlength: 600
   - List what you want the court to order:: claims[i].details
     input type: area
     rows: 7
@@ -867,9 +897,9 @@ subquestion: |
   These are the other parties in this case: ${comma_and_list(delivery_parties)}.
 
   % if trial_with == "Judge only":
-  You must send a copy of your *Appearance* and *Answer* forms to each of them.
+  You must send a copy of your forms to each of them.
   % else:
-  You must send a copy of your *Appearance*, *Jury Request*, and *Answer* forms to each of them.
+  You must send a copy of your forms to each of them.
   % endif
 
   If someone in the case has a lawyer, you only need to send them to their lawyer.
@@ -1510,8 +1540,8 @@ attachment:
       - "user_mail_address_one_line__2": ${ users[0].address.on_one_line(bare=True) }
       - "user_phone_number__1": ${ phone_number_formatted(users[0].phone_number) }
       - "user_phone_number__2": ${ phone_number_formatted(users[0].phone_number) }
-      - "user_email": ${ users[0].email if users[0].has_email_address else '' }
-      - "user_email__2": ${ users[0].email if users[0].has_email_address else '' }
+      - "user_email": ${ users[0].email if users[0].email_notice else '' }
+      - "user_email__2": ${ users[0].email if users[0].email_notice else '' }
       - "case_number__1": ${ case_number }
       - "case_number__2": ${ case_number }
       - "case_number__3": ${ case_number }
@@ -1551,7 +1581,7 @@ attachment:
       - "is_delivery_party1_not_electronic": ${ True if delivery_parties[0].knows_delivery_method and ( delivery_parties[0].mail_delivery or delivery_parties[0].hand_delivery or delivery_parties[0].jail_delivery ) else '' }
       - "delivery_party1_mail_city": ${ delivery_parties[0].delivery_mail_city if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery else '' }
       - "delivery_party1_mail_state": ${ state_name(delivery_parties[0].delivery_mail_state) if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery else '' }
-      - "delivery_party1_hand_address": ${ delivery_parties[0].hand_delivery_address.on_one_line(bare=True) if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery else '' }
+      - "delivery_party1_hand_address": ${ delivery_parties[0].hand_delivery_address.on_one_line(bare=True) if delivery_parties[0].knows_delivery_method and delivery_parties[0].hand_delivery else '' }
       - "is_delivery_party1_jail_yes": ${ True if delivery_parties[0].knows_delivery_method and delivery_parties[0].jail_delivery else '' }
       - "delivery_party1_jail_name": ${ delivery_parties[0].delivery_jail_name if delivery_parties[0].knows_delivery_method and delivery_parties[0].jail_delivery else '' }
       - "is_delivery_party1_end": ${ delivery_parties.number() == 1 }
@@ -1576,7 +1606,7 @@ attachment:
       - "is_delivery_party2_not_electronic": ${ True if delivery_parties[1].knows_delivery_method and ( delivery_parties[1].mail_delivery or delivery_parties[1].hand_delivery or delivery_parties[1].jail_delivery ) else '' }
       - "delivery_party2_mail_city": ${ delivery_parties[1].delivery_mail_city if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery else '' }
       - "delivery_party2_mail_state": ${ state_name(delivery_parties[1].delivery_mail_state) if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery else '' }
-      - "delivery_party2_hand_address": ${ delivery_parties[1].hand_delivery_address.on_one_line(bare=True) if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery else '' }
+      - "delivery_party2_hand_address": ${ delivery_parties[1].hand_delivery_address.on_one_line(bare=True) if delivery_parties[1].knows_delivery_method and delivery_parties[1].hand_delivery else '' }
       - "is_delivery_party2_jail_yes": ${ True if delivery_parties[1].knows_delivery_method and delivery_parties[1].jail_delivery else '' }
       - "delivery_party2_jail_name": ${ delivery_parties[1].delivery_jail_name if delivery_parties[1].knows_delivery_method and delivery_parties[1].jail_delivery else '' }
 
@@ -1594,7 +1624,7 @@ attachment:
       - "user__1": ${ users[0].name.full(middle="full") }
       - "user_mail_address_one_line__1": ${ users[0].address.on_one_line(bare=True) }
       - "user_phone_number__1": ${ phone_number_formatted(users[0].phone_number) }
-      - "user_email": ${ users[0].email if users[0].has_email_address else '' }
+      - "user_email__1": ${ users[0].email if users[0].email_notice else '' }
       - "case_number__1": ${ case_number }
       - "e_sign_name__1": ${ users[0].name.full(middle="full") if e_signature else '' }
 
@@ -1617,7 +1647,7 @@ attachment:
       - "is_delivery_party1_not_electronic": ${ True if x.knows_delivery_method and ( x.mail_delivery or x.hand_delivery or x.jail_delivery ) else '' }
       - "delivery_party1_mail_city": ${ x.delivery_mail_city if x.knows_delivery_method and x.mail_delivery else '' }
       - "delivery_party1_mail_state": ${ state_name(x.delivery_mail_state) if x.knows_delivery_method and x.mail_delivery else '' }
-      - "delivery_party1_hand_address": ${ x.hand_delivery_address.on_one_line(bare=True) if x.knows_delivery_method and x.mail_delivery else '' }
+      - "delivery_party1_hand_address": ${ x.hand_delivery_address.on_one_line(bare=True) if x.knows_delivery_method and x.hand_delivery else '' }
       - "is_delivery_party1_jail_yes": ${ True if x.knows_delivery_method and x.jail_delivery else '' }
       - "delivery_party1_jail_name": ${ x.delivery_jail_name if x.knows_delivery_method and x.jail_delivery else '' }
       - "is_delivery_party1_end": ${ (delivery_parties.index(x) + 1) == delivery_parties.number() } # true if this is the last delivery party
@@ -1642,7 +1672,7 @@ attachment:
       - "is_delivery_party2_not_electronic": ${ True if x.second_person.knows_delivery_method and ( x.second_person.mail_delivery or x.second_person.hand_delivery or x.second_person.jail_delivery ) else '' }
       - "delivery_party2_mail_city": ${ x.second_person.delivery_mail_city if x.second_person.knows_delivery_method and x.second_person.mail_delivery else '' }
       - "delivery_party2_mail_state": ${ state_name(x.second_person.delivery_mail_state) if x.second_person.knows_delivery_method and x.second_person.mail_delivery else '' }
-      - "delivery_party2_hand_address": ${ x.second_person.hand_delivery_address.on_one_line(bare=True) if x.second_person.knows_delivery_method and x.second_person.mail_delivery else '' }
+      - "delivery_party2_hand_address": ${ x.second_person.hand_delivery_address.on_one_line(bare=True) if x.second_person.knows_delivery_method and x.second_person.hand_delivery else '' }
       - "is_delivery_party2_jail_yes": ${ True if x.second_person.knows_delivery_method and x.second_person.jail_delivery else '' }
       - "delivery_party2_jail_name": ${ x.second_person.delivery_jail_name if x.second_person.knows_delivery_method and x.second_person.jail_delivery else '' }
 ---
@@ -1692,8 +1722,8 @@ attachment:
       - "user_mail_address_one_line__2": ${ users[0].address.on_one_line(bare=True) }
       - "user_phone_number__1": ${ phone_number_formatted(users[0].phone_number) }
       - "user_phone_number__2": ${ phone_number_formatted(users[0].phone_number) }
-      - "user_email": ${ users[0].email if users[0].has_email_address else '' }
-      - "user_email__2": ${ users[0].email if users[0].has_email_address else '' }
+      - "user_email": ${ users[0].email if users[0].email_notice else '' }
+      - "user_email__2": ${ users[0].email if users[0].email_notice else '' }
       - "case_number__1": ${ case_number }
       - "case_number__2": ${ case_number }
       - "case_number__3": ${ case_number }
@@ -1727,7 +1757,7 @@ attachment:
       - "is_delivery_party1_not_electronic": ${ True if delivery_parties[0].knows_delivery_method and ( delivery_parties[0].mail_delivery or delivery_parties[0].hand_delivery or delivery_parties[0].jail_delivery ) else '' }
       - "delivery_party1_mail_city": ${ delivery_parties[0].delivery_mail_city if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery else '' }
       - "delivery_party1_mail_state": ${ state_name(delivery_parties[0].delivery_mail_state) if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery else '' }
-      - "delivery_party1_hand_address": ${ delivery_parties[0].hand_delivery_address.on_one_line(bare=True) if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery else '' }
+      - "delivery_party1_hand_address": ${ delivery_parties[0].hand_delivery_address.on_one_line(bare=True) if delivery_parties[0].knows_delivery_method and delivery_parties[0].hand_delivery else '' }
       - "is_delivery_party1_jail_yes": ${ True if delivery_parties[0].knows_delivery_method and delivery_parties[0].jail_delivery else '' }
       - "delivery_party1_jail_name": ${ delivery_parties[0].delivery_jail_name if delivery_parties[0].knows_delivery_method and delivery_parties[0].jail_delivery else '' }
       - "is_delivery_party1_end": ${ delivery_parties.number() == 1 }
@@ -1752,7 +1782,7 @@ attachment:
       - "is_delivery_party2_not_electronic": ${ True if delivery_parties[1].knows_delivery_method and ( delivery_parties[1].mail_delivery or delivery_parties[1].hand_delivery or delivery_parties[1].jail_delivery ) else '' }
       - "delivery_party2_mail_city": ${ delivery_parties[1].delivery_mail_city if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery else '' }
       - "delivery_party2_mail_state": ${ state_name(delivery_parties[1].delivery_mail_state) if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery else '' }
-      - "delivery_party2_hand_address": ${ delivery_parties[1].hand_delivery_address.on_one_line(bare=True) if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery else '' }
+      - "delivery_party2_hand_address": ${ delivery_parties[1].hand_delivery_address.on_one_line(bare=True) if delivery_parties[1].knows_delivery_method and delivery_parties[1].hand_delivery else '' }
       - "is_delivery_party2_jail_yes": ${ True if delivery_parties[1].knows_delivery_method and delivery_parties[1].jail_delivery else '' }
       - "delivery_party2_jail_name": ${ delivery_parties[1].delivery_jail_name if delivery_parties[1].knows_delivery_method and delivery_parties[1].jail_delivery else '' }
 
@@ -1914,20 +1944,24 @@ attachment:
       - "has_affirmative_defenses": ${ has_defenses }
       - "has_counterclaims": ${ has_counterclaims }
       - "answer_pod_docs__1": |
+          % if has_defenses and has_counterclaims:
+          Answer or Response, Affirmative Defenses, and Counterclaims
+          % elif has_defenses:
+          Answer or Response and Affirmative Defenses
+          % elif has_counterclaims:
+          Answer or Response and Counterclaims
+          % else:
           Answer or Response
-          % if has_defenses:
-          , Affirmative Defenses
-          % endif
-          % if has_counterclaims:
-          , Counterclaims
           % endif
       - "answer_pod_docs__2": |
+          % if has_defenses and has_counterclaims:
+          Answer or Response, Affirmative Defenses, and Counterclaims
+          % elif has_defenses:
+          Answer or Response and Affirmative Defenses
+          % elif has_counterclaims:
+          Answer or Response and Counterclaims
+          % else:
           Answer or Response
-          % if has_defenses:
-          , Affirmative Defenses
-          % endif
-          % if has_counterclaims:
-          , Counterclaims
           % endif
           
       - "delivery_party1_name_full": | 
@@ -1949,7 +1983,7 @@ attachment:
       - "is_delivery_party1_not_electronic": ${ True if delivery_parties[0].knows_delivery_method and ( delivery_parties[0].mail_delivery or delivery_parties[0].hand_delivery or delivery_parties[0].jail_delivery ) else '' }
       - "delivery_party1_mail_city": ${ delivery_parties[0].delivery_mail_city if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery else '' }
       - "delivery_party1_mail_state": ${ state_name(delivery_parties[0].delivery_mail_state) if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery else '' }
-      - "delivery_party1_hand_address": ${ delivery_parties[0].hand_delivery_address.on_one_line(bare=True) if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery else '' }
+      - "delivery_party1_hand_address": ${ delivery_parties[0].hand_delivery_address.on_one_line(bare=True) if delivery_parties[0].knows_delivery_method and delivery_parties[0].hand_delivery else '' }
       - "is_delivery_party1_jail_yes": ${ True if delivery_parties[0].knows_delivery_method and delivery_parties[0].jail_delivery else '' }
       - "delivery_party1_jail_name": ${ delivery_parties[0].delivery_jail_name if delivery_parties[0].knows_delivery_method and delivery_parties[0].jail_delivery else '' }
       - "delivery_party2_name_full": | 
@@ -1971,7 +2005,7 @@ attachment:
       - "is_delivery_party2_not_electronic": ${ True if delivery_parties[1].knows_delivery_method and ( delivery_parties[1].mail_delivery or delivery_parties[1].hand_delivery or delivery_parties[1].jail_delivery ) else '' }
       - "delivery_party2_mail_city": ${ delivery_parties[1].delivery_mail_city if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery else '' }
       - "delivery_party2_mail_state": ${ state_name(delivery_parties[1].delivery_mail_state) if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery else '' }
-      - "delivery_party2_hand_address": ${ delivery_parties[1].hand_delivery_address.on_one_line(bare=True) if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery else '' }
+      - "delivery_party2_hand_address": ${ delivery_parties[1].hand_delivery_address.on_one_line(bare=True) if delivery_parties[1].knows_delivery_method and delivery_parties[1].hand_delivery else '' }
       - "is_delivery_party2_jail_yes": ${ True if delivery_parties[1].knows_delivery_method and delivery_parties[1].jail_delivery else '' }
       - "delivery_party2_jail_name": ${ delivery_parties[1].delivery_jail_name if delivery_parties[1].knows_delivery_method and delivery_parties[1].jail_delivery else '' }
 
@@ -2153,10 +2187,8 @@ attachment:
       
       
       
----
-
-
 ############### Review page
+---
 id: review screen
 event: review_answers
 question: |
@@ -2324,7 +2356,7 @@ review:
       ${ word(yesno(e_signature)) }
 ---
 #needs: yes_no_unknown
-id: delivery party review
+id: delivery party review screen
 continue button field: x.review_delivery
 generic object: ALIndividual
 question: |
@@ -2356,9 +2388,9 @@ review:
   - Edit: x.address.address
     button: |
       % if x.is_represented == True:
-      **${ x.lawyer.name.full(middle="full") }'s address: **
+      **${ x.lawyer.name.full(middle="full") }'s address:**
       % else:
-      **${ x.name.full(middle="full") }'s address: **
+      **${ x.name.full(middle="full") }'s address:**
       % endif
       ${ x.address.on_one_line(bare=True) }
   - Edit: x.knows_delivery_method
@@ -2380,6 +2412,9 @@ review:
       % endif
       % if x.mail_delivery == True:
         * US mail or a delivery company
+      % endif
+      % if x.jail_delivery == True:
+        * Mail from prison or jail
       % endif
     show if: x.knows_delivery_method
   - Edit: x.delivery_date
@@ -2457,7 +2492,7 @@ columns:
 delete buttons: True
 confirm: True
 ---
-id: answer response review
+id: answer response review screen
 continue button field: x.review_responses
 generic object: DAObject
 question: |
@@ -2651,11 +2686,6 @@ columns:
       action_button_html(url_action(row_item.attr_name("name.text")), label="Edit", icon="pencil-alt")
 delete buttons: True
 confirm: True
-
-
-
-
-
 ---
 id: delivery info review screen
 event: section_delivery
