@@ -723,12 +723,14 @@ question: |
 subquestion: |
   If you know that a statement in the Complaint or Petition is **true**, list it here.
   
-  On the next screen, you can list the statements that you don't know are true.
+  On the next screen, you can list the statements that you don't know if they are true or false.
 fields:
   - Statements you admit are true:: unlabeled_admit
     input type: area
     rows: 12
     maxlength: 600
+    help: |
+      The form has limited space. You can fit more words if you don't break lines with the Enter or Return key. 
   - Are there more statements you admit are true?: more_admit
     datatype: yesnoradio
   - More statements you admit are true:: unlabeled_admit_more
@@ -738,6 +740,8 @@ fields:
     show if:
       variable: more_admit
       is: True
+    help: |
+      The form has limited space. You can fit more words if you don't break lines with the Enter or Return key. 
 ---
 id: unableled statements admit
 question: |
@@ -749,6 +753,8 @@ fields:
     input type: area
     rows: 12
     maxlength: 600
+    help: |
+      The form has limited space. You can fit more words if you don't break lines with the Enter or Return key. 
   - Are there more statements you admit are true?: more_idk
     datatype: yesnoradio
   - More statements you do not know are true:: unlabeled_idk_more
@@ -758,6 +764,8 @@ fields:
     show if:
       variable: more_idk
       is: True
+    help: |
+      The form has limited space. You can fit more words if you don't break lines with the Enter or Return key. 
 ---
 id: affirmative defenses intro
 continue button field: defenses_intro
@@ -791,6 +799,8 @@ fields:
     input type: area
     rows: 11
     maxlength: 625
+    help: |
+      The form has limited space. You can fit more words if you don't break lines with the Enter or Return key. 
 ---
 id: any other defenses
 question: |
@@ -846,10 +856,14 @@ fields:
     input type: area
     rows: 12
     maxlength: 600
+    help: |
+      The form has limited space. You can fit more words if you don't break lines with the Enter or Return key. 
   - List what you want the court to order:: claims[i].details
     input type: area
     rows: 7
     maxlength: 300
+    help: |
+      The form has limited space. You can fit more words if you don't break lines with the Enter or Return key. 
 ---
 id: any other counterclaims
 question: |
@@ -896,11 +910,7 @@ question: |
 subquestion: |
   These are the other parties in this case: ${comma_and_list(delivery_parties)}.
 
-  % if trial_with == "Judge only":
   You must send a copy of your forms to each of them.
-  % else:
-  You must send a copy of your forms to each of them.
-  % endif
 
   If someone in the case has a lawyer, you only need to send them to their lawyer.
 ---
@@ -2266,17 +2276,17 @@ review:
     show if: more_admit and not complaint_labeled
   - Edit: unlabeled_idk
     button: |
-      **Unlabeled statements you do not know if they are true:**
+      **Unlabeled statements you do not know if they are true or false:**
       ${ unlabeled_idk }
     show if: not complaint_labeled
   - Edit: more_idk
     button: |
-      **Are there more unlabeled statements you do not know if they are true?**
+      **Are there more unlabeled statements you do not know if they are true or false?**
       ${ word(yesno(more_idk)) }
     show if: not complaint_labeled
   - Edit: unlabeled_idk_more
     button: |
-      **More unlabeled statements you do not know if they are true:**
+      **More unlabeled statements you do not know if they are true or false:**
       ${ unlabeled_idk_more }
     show if: more_idk and not complaint_labeled
   - Edit: has_defenses
@@ -2596,17 +2606,17 @@ review:
     show if: more_admit and not complaint_labeled
   - Edit: unlabeled_idk
     button: |
-      **Unlabeled statements you do not know if they are true:**
+      **Unlabeled statements you do not know if they are true or false:**
       ${ unlabeled_idk }
     show if: not complaint_labeled
   - Edit: more_idk
     button: |
-      **Are there more unlabeled statements you do not know if they are true?**
+      **Are there more unlabeled statements you do not know if they are true or false?**
       ${ word(yesno(more_idk)) }
     show if: not complaint_labeled
   - Edit: unlabeled_idk_more
     button: |
-      **More unlabeled statements you do not know if they are true:**
+      **More unlabeled statements you do not know if they are true or false:**
       ${ unlabeled_idk_more }
     show if: more_idk and not complaint_labeled
 ---
