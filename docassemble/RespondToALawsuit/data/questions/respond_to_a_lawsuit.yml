@@ -58,7 +58,7 @@ code: |
   lawsuit_information
   challenge_service
   if eviction_case:
-    eviction_warning
+    eviction_kickout
   elif small_claims_case:
     small_claims_warning
   
@@ -276,7 +276,7 @@ fields:
     datatype: yesnoradio
 ---
 id: eviction warning
-continue button field: eviction_warning
+event: eviction_kickout
 question: |
   Important information for evictions
 subquestion: |
@@ -284,8 +284,10 @@ subquestion: |
 
   Eviction is different than other court cases. There are special court forms just for evictions. ILAO has an Easy Form that explains eviction law and helps you make the forms you need.
 
-  If you are a tenant being sued by your landlord, use the [**Respond to an eviction**](https://www.illinoislegalaid.org/legal-information/respond-eviction) Easy Form instead. If you are not in an eviction case, click **Next**.
-
+  If you are a tenant being sued by your landlord, use the [**Respond to an eviction**](https://www.illinoislegalaid.org/legal-information/respond-eviction) Easy Form instead. If you are not in an eviction case, click **Back** to change your answer.
+buttons:
+  - Exit: exit
+  - Restart: restart
 ---
 id: ask if small claims case
 question: |
@@ -306,6 +308,18 @@ subquestion: |
   The judge might order you to file an Answer after you go to court.
 
   To learn more, read ILAO's article about [**being sued for $10,000 or less**](https://www.illinoislegalaid.org/legal-information/being-sued-10000-or-less).
+---
+id: user name
+sets:
+    - users[0].name.first
+    - users[0].name.last
+    - users[0].name.middle
+    - users[0].name.suffix
+question:  |
+  What is your name?
+fields:
+  - code: |
+      users[0].name_fields()
 ---
 id: in re check
 question: |
@@ -329,11 +343,7 @@ fields:
 ---
 id: any other users
 question: |
-  % if al_form_type in ['starts_case','existing_case','appeal']:
   Is anyone else on your side of this case?
-  % else:
-  Is anyone else adding their name to this form with you?
-  % endif
 subquestion: |
   % if len(users.elements) > 1:  
   So far you have told us about ${comma_and_list(users.complete_elements().full_names())}.
@@ -717,7 +727,7 @@ terms:
   do not know: |
     You do not know the statement is true or false. This means you do not have enough information to truthfully admit or deny the statement. 
 ---
-id: unableled statements idk
+id: unableled statements admit
 question: |
   Which statements in the Complaint or Petition do you admit are true?
 subquestion: |
@@ -743,7 +753,7 @@ fields:
     help: |
       The form has limited space. You can fit more words if you don't break lines with the Enter or Return key. 
 ---
-id: unableled statements admit
+id: unableled statements idk
 question: |
   Which statements in the Complaint or Petition do you not know if they are true?
 subquestion: |
@@ -755,7 +765,7 @@ fields:
     maxlength: 600
     help: |
       The form has limited space. You can fit more words if you don't break lines with the Enter or Return key. 
-  - Are there more statements you admit are true?: more_idk
+  - Are there more statements you do not know are true or false?: more_idk
     datatype: yesnoradio
   - More statements you do not know are true:: unlabeled_idk_more
     input type: area
@@ -772,9 +782,11 @@ continue button field: defenses_intro
 question: |
   Affirmative defenses
 subquestion: |  
-  Affirmative defenses are reasons why the Plaintiff should not win the case even if everything in the Eviction Complaint is true.
+  Affirmative defenses are reasons why the Plaintiff should not win the case even if everything in the Complaint is true.
   
   An affirmative defense is not the same as saying "I did nothing wrong." Instead, it is telling the court: "even if you think the Plaintiff is right, I should win because I have this defense."
+  
+  For example, a person has a certain amount of time after something happens to file a lawsuit. This is called a statute of limitations. If the plaintiff files a lawsuit after the statute of limitations ran out for their case, you could use this affirmative defense.
   
   **Note:** You will have to prove your affirmative defenses in court with evidence such as documents.
 ---  
@@ -831,6 +843,8 @@ question: |
 subquestion: |
   A counterclaim is like a new lawsuit.
 
+  For example, say someone sues you for damage to their car from an accident you were in. You could file a counterclaim against them if you think that they were at fault and owe you money instead.
+  
   You will have to state facts to explain what you are claiming. You will have to prove these facts at trial.
   
   There will likely be fees to file your counterclaims.
@@ -2368,6 +2382,7 @@ review:
 #needs: yes_no_unknown
 id: delivery party review screen
 continue button field: x.review_delivery
+section: Delivery details
 generic object: ALIndividual
 question: |
   Edit ${ x.name.full(middle="full") }'s information
@@ -2439,6 +2454,7 @@ review:
 ---
 id: users review screen
 continue button field: users.revisit
+section: Case info
 question: |
   Edit the ${ user_ask_role }s
 subquestion: |
@@ -2458,6 +2474,7 @@ confirm: True
 ---
 id: other parties review screen
 continue button field: other_parties.revisit
+section: Case info
 question: |
   % if user_ask_role == "plaintiff":
     Edit the defendants
@@ -2481,6 +2498,7 @@ confirm: True
 ---
 id: answers review screen
 continue button field: answer_responses.revisit
+section: Responses
 question: |
   Edit your responses
 subquestion: |
@@ -2504,6 +2522,7 @@ confirm: True
 ---
 id: answer response review screen
 continue button field: x.review_responses
+section: Responses
 generic object: DAObject
 question: |
   Edit your response
@@ -2523,6 +2542,7 @@ review:
 ---
 id: case info review screen
 event: section_case_info
+section: Case info
 question: |
   Case info
 subquestion: |
@@ -2572,6 +2592,7 @@ review:
 ---
 id: responses section review screen
 event: section_answer
+section: Responses
 question: |
   Responses
 subquestion: |
@@ -2656,6 +2677,7 @@ review:
 ---
 id: defenses revisit review screen
 continue button field: defenses.revisit
+section: Affirmative defenses and Counterclaims (optional)
 question: |
   Edit the affirmative defenses
 subquestion: |
@@ -2678,6 +2700,7 @@ confirm: True
 ---
 id: counterclaims revisit review screen
 continue button field: claims.revisit
+section: Affirmative defenses and Counterclaims (optional)
 question: |
   Edit the counterclaims
 subquestion: |
@@ -2699,6 +2722,7 @@ confirm: True
 ---
 id: delivery info review screen
 event: section_delivery
+section: Delivery details
 question: |
   Delivery details
 subquestion: |
@@ -2726,6 +2750,7 @@ review:
 ---
 id: about you review screen
 event: section_about_you
+section: About you
 question: |
   About you
 subquestion: |
