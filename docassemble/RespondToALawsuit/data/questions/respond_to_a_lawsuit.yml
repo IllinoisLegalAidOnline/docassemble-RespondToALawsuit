@@ -167,7 +167,7 @@ question: |
 subquestion: |
   Welcome to Illinois Legal Aid Online's **Respond to a lawsuit** Easy Form.
 
-  If you received a Complaint or Petition and a Summons, you have been sued. This program helps you respond to a lawsuit. It makes different forms depending on how you want to respond. Some forms are optional.
+  If you received a Complaint or Petition and a Summons, you have been sued. Your Summons either lists a court date or a deadline for filing Appearance and Answer forms. This program helps you respond to a lawsuit when the Summons lists a deadline for filing forms. It makes different forms depending on how you want to respond. Some forms are optional.
   
   * An *Appearance* tells the court and the other parties that you are participating in the court case.
   * A *Jury Request* is used if you want a jury and a judge to decide your case.
@@ -186,7 +186,7 @@ subquestion: |
   To use this program you will need: 
 
   * The Complaint or Petition that you received,
-  * The Summons that orders you to go to court and the deadline for filing a written response, 
+  * The Summons that lists the deadline for filing a written response, 
   * Names and addresses of the other parties, and
   * Names and addresses of the other parties' lawyers. 
 
@@ -230,7 +230,7 @@ question: |
 subquestion: |
   If you received a Complaint or Petition and a Summons, you have been sued. You need to tell the court you want to participate in your case. You tell the court you are participating in the case by filing an **{Appearance}**. In some cases, you need to file an **{Answer}** to respond to the Complaint or Petition.
 
-  The Summons you received will tell you the deadline for filing your Appearance and Answer. If you do not respond by the deadline, you can be found in default, and the court can rule against you.
+  If you need to file an Appearance and Answer, the Summons you received will tell you the deadline for filing your Appearance and Answer. If you do not respond by the deadline, you can be found in default, and the court can rule against you.
   
   To learn more, read ILAO's article about [**responding to a lawsuit**](https://www.illinoislegalaid.org/node/32236).
   
@@ -242,7 +242,7 @@ template: response_required_help
 subject: |
   **Do I need to file a written Answer?**
 content: |  
-  There are two kinds of cases where you must appear in person but are not required to file a written Answer:
+  There are some kinds of cases where you must attend court instead of filing a written Answer. For example:
 
   * The lawsuit is for money and involves $10,000 or less. This is called a Small Claims case.
   * An eviction lawsuit (formerly called Forcible Entry and Detainer).
@@ -254,7 +254,7 @@ continue button field: challenge_service
 question: |
   Think about defenses
 subquestion: |
-  There can be many defenses to a lawsuit. However, a few special defenses must be brought up **before** you file your Answer. If you want to:
+  There can be many defenses to a lawsuit. However, a few special defenses must be brought up **before** you file your Answer.
 
   You need to file a Motion **before** you file your Answer if you want to:
   
@@ -288,7 +288,7 @@ id: ask if eviction case
 question: |
   Are you responding to an eviction lawsuit?
 subquestion: |
-  If you are a tenant who is being sued by your landlord, click **Yes**.
+  If you are a tenant who is being evicted by your landlord, click **Yes**.
 fields:
   - no label: eviction_case
     datatype: yesnoradio
@@ -366,9 +366,9 @@ id: in re check
 question: |
  Does the court case have the words "**In re:**" in the name?
 subquestion: |
-  Look at the name of the case at the top of the court papers. "In re" is often used in probate, bankruptcy, and some family law cases. For example, a probate case regarding Jane Doe’s estate might be called "In re: Estate of Jane Doe."
+  Look at the name of the case at the top of the court papers. "In re" is often used in probate, guardianship, and some family law cases. For example, a probate case regarding Jane Doe’s estate might be called "In re: Estate of Jane Doe."
   
-  **Note:** If the court papers list the names of people in the case, you can select **No**. For example, if the case title is "In re: Marriage of Julia Smith and Tony Smith," the names you already entered will be put on your forms. 
+  **Note:** If the court papers say "In re:" but also list the names of people in the case, you can select **No**. For example, if the case title is "In re: Marriage of Julia Smith and Tony Smith," the names you already entered will be put on your forms. 
 fields:
   - no label: in_re_check
     datatype: yesnoradio
@@ -512,8 +512,6 @@ subject: |
 content: |  
   The case number should be on your court papers. Look at the Complaint or Petition, or the Summons if you received one. It is usually in the top-right part of the first page.
   
-  If you started the case, the court clerk should have given you the case number.
-  
   In this example, the case number is **2022 EXAMPLE 123**.
   
   [FILE case_number_example.png, 100%, Summons form showing case number]
@@ -564,7 +562,7 @@ subquestion: |
   
   If you do not want to list a phone number on your forms, leave it blank.
 
-  If you have an email address, you must list it. Be sure to check your email daily, otherwise you may miss important information about your case.
+  If you have an email address, you must list it. Be sure to check your email daily, otherwise you may miss important court documents or information about your case.
 
   ${ collapse_template(contact_info_help) }  
 fields:  
@@ -882,7 +880,7 @@ continue button field: counterclaims_intro
 question: |
   Counterclaims
 subquestion: |
-  Counterclaims are like a new lawsuit. These are separate legal claims you have against the plaintiff related to the issues in this case.
+  Counterclaims are separate legal claims you have against the plaintiff related to the issues in this case. Filing counterclaims is like filing a new lawsuit. They are optional.
 
   For example, say someone sues you for damage to their car from an accident you were in. You could file a counterclaim against them if you think that they were at fault and owe you money instead.
   
@@ -967,7 +965,7 @@ subquestion: |
 
   You must send a copy of your forms to each of them.
 
-  If someone in the case has a lawyer, you only need to send them to their lawyer.
+  If someone in the case has a lawyer, send them to their lawyer.
 ---
 id: has lawyer
 generic object: ALIndividual
@@ -1074,7 +1072,7 @@ content: |
   * US mail or a delivery company (like UPS or FedEx), or
   * Hand delivery to the party, the party's family member over 13 at their residence, the party's lawyer, or their lawyer's office.
 
-  You may use US mail or a delivery company, or hand delivery if you or the other party **does not** have an email address.
+  If the other party listed an email address on the court documents, you must send the form to them by email or through the e-filing system. You may use US mail or a delivery company, or hand delivery if you or the other party **does not** have an email address.
   
   If you are in a prison or jail, you can deliver by mail.
 terms:
@@ -1091,7 +1089,7 @@ question: |
   How will you send your forms to ${ users[i].name.full(middle="full") }?
   % endif
 subquestion: |  
-  You may use US mail or a delivery company, or hand delivery if you or the other party **does not** have an email address. If you are in a prison or jail, you can deliver by mail.
+  If the other party listed an email address on the court documents, you must send the form to them by email or through the e-filing system. You may use US mail or a delivery company, or hand delivery if you or the other party **does not** have an email address. If you are in a prison or jail, you can deliver by mail.
 
   For best results, complete the Proof of Delivery section and send the forms today.
 
@@ -1185,7 +1183,7 @@ question: |
   How will you send your forms to ${ other_parties[i].name.full(middle="full") }?
   % endif
 subquestion: |  
-  You may use US mail or a delivery company, or hand delivery if you or the other party **does not** have an email address. If you are in a prison or jail, you can deliver by mail.
+  If the other party listed an email address on the court documents, you must send the form to them by email or through the e-filing system. You may use US mail or a delivery company, or hand delivery if you or the other party **does not** have an email address. If you are in a prison or jail, you can deliver by mail.
 
   For best results, complete the Proof of Delivery section and send the forms today.
 
