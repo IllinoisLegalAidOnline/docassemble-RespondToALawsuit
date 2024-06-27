@@ -78,8 +78,6 @@ code: |
   trial_court
   case_number
   trial_with
-  #if trial_with != "judge only":
-  #  jury_demand_filing_info
   
   set_progress(40)
   nav.set_section('section_answer')
@@ -106,8 +104,6 @@ code: |
   set_progress(60)
   nav.set_section('section_delivery')
   delivery_intro
-  #if delivery_parties.number() > 8:
-  #  extra_delivery_forms
   set_progress(70)
   for person in delivery_parties:
     if person.is_represented:
@@ -618,17 +614,6 @@ terms:
   - "e-signature": |
       An e-signature is an electronic signature. It is a digital version of a signature that has the same effect as a hand-written signature. 
 ---
-#template: signature_help
-#subject: |
-#  **What does it mean to sign the *Appearance* and *Answer*?**
-#content: |  
-#  By signing your *Appearance* and *Answer*, you are certifying that:
-#  
-#  * Everything on the forms is true and correct, and
-#  * You understand that making a false statement on the form is perjury, which can result in criminal penalties.
-#
-#  See the [**Code of Civil Procedure, 735 ILCS 5/1-109**](https://www.ilga.gov/legislation/ilcs/documents/073500050k1-109.htm), for more information.
----
 id: answer intro
 continue button field: answer_intro
 question: |
@@ -945,17 +930,6 @@ code: |
   delivery_parties = DAList("delivery_parties", elements = other_parties + users[1:])
 # changed order to keep it a DAList
 ---
-#id: extra delivery forms required
-#continue button field: extra_delivery_forms
-#question: |
-#  Additional Proof of Delivery
-#subquestion: |
-#  This program makes the Proof of Delivery forms for up to 8 other parties.
-#  
-#  You will need to fill out *Additional Proof of Delivery* forms for ${comma_and_list(delivery_parties[8:])}. 
-#  
-#  You can download blank *Additional Proof of Delivery* forms at the end of this program.
----
 id: delivery intro
 continue button field: delivery_intro
 question: |
@@ -1072,7 +1046,7 @@ content: |
   * US mail or a delivery company (like UPS or FedEx), or
   * Hand delivery to the party, the party's family member over 13 at their residence, the party's lawyer, or their lawyer's office.
 
-  If the other party listed an email address on the court documents, you must send the form to them by email or through the e-filing system. You may use US mail or a delivery company, or hand delivery if you or the other party **does not** have an email address.
+  If the other party listed an email address on the court documents, you must send the forms to them by email or through the e-filing system. You may use US mail or a delivery company, or hand delivery if you or the other party **does not** have an email address.
   
   If you are in a prison or jail, you can deliver by mail.
 terms:
@@ -1089,7 +1063,7 @@ question: |
   How will you send your forms to ${ users[i].name.full(middle="full") }?
   % endif
 subquestion: |  
-  If the other party listed an email address on the court documents, you must send the form to them by email or through the e-filing system. You may use US mail or a delivery company, or hand delivery if you or the other party **does not** have an email address. If you are in a prison or jail, you can deliver by mail.
+  If the other party listed an email address on the court documents, you must send the forms to them by email or through the e-filing system. You may use US mail or a delivery company, or hand delivery if you or the other party **does not** have an email address. If you are in a prison or jail, you can deliver by mail.
 
   For best results, complete the Proof of Delivery section and send the forms today.
 
@@ -1183,7 +1157,7 @@ question: |
   How will you send your forms to ${ other_parties[i].name.full(middle="full") }?
   % endif
 subquestion: |  
-  If the other party listed an email address on the court documents, you must send the form to them by email or through the e-filing system. You may use US mail or a delivery company, or hand delivery if you or the other party **does not** have an email address. If you are in a prison or jail, you can deliver by mail.
+  If the other party listed an email address on the court documents, you must send the forms to them by email or through the e-filing system. You may use US mail or a delivery company, or hand delivery if you or the other party **does not** have an email address. If you are in a prison or jail, you can deliver by mail.
 
   For best results, complete the Proof of Delivery section and send the forms today.
 
@@ -1415,7 +1389,7 @@ content: |
 ---
 objects:
   - appearance_attachment: ALDocument.using(title="Appearance", filename="appearance.pdf", has_addendum=False)
-  - appearance_instructions: ALDocument.using(title="Instructions for Appearance and Jury Request", filename="instructions.pdf", has_addendum=False)
+  - appearance_instructions: ALDocument.using(title="Instructions for Appearance and Jury Request", filename="appearance_instructions.pdf", has_addendum=False)
   - jury_request: ALDocument.using(title="Jury Request", filename="jury_request.pdf", has_addendum=False)
 
   - answer_attachment: ALDocument.using(title="Answer or Response", filename="answer.pdf", has_addendum=False)
@@ -1425,13 +1399,6 @@ objects:
   - affirmative_defenses: ALDocument.using(title="Affirmative Defenses", filename="affirmative_defenses.pdf", has_addendum=False)
   - counterclaims: ALDocument.using(title="Counterclaims", filename="counterclaims.pdf", has_addendum=False)
 
-
-  #- illinois_appearance_attachment: ALDocument.using(title="Appearance", filename="appearance.pdf", has_addendum=False)
-  #- illinois_appearance_instructions: ALDocument.using(title="Instructions for Appearance", filename="instructions.pdf", has_addendum=False)
-  #- illinois_appearance_additional: ALDocument.using(title="Additional Proof of Delivery", filename="appearance_additional_proof_delivery.pdf", has_addendum=False)
-  #- illinois_appearance_additional_2: ALDocument.using(title="Additional Proof of Delivery 2", filename="appearance_additional_proof_delivery_2.pdf", has_addendum=False)
-  #- illinois_appearance_additional_3: ALDocument.using(title="Additional Proof of Delivery 3", filename="appearance_additional_proof_delivery_3.pdf", has_addendum=False)
-  #- illinois_appearance_additional_blank: ALDocument.using(title="Additional Proof of Delivery (blank)", filename="appearance_additional_proof_delivery_blank.pdf", has_addendum=False)
 ---
 #This needs to be a generic object because the delivery parties list entries point to entries in other lists.
 generic object: ALIndividual
@@ -1502,41 +1469,6 @@ code: |
   if has_counterclaims:
     counterclaims.enabled = True
 
----
-#code: |
-#  illinois_appearance_attachment.enabled = False
-#  illinois_appearance_instructions.enabled = False
-#  illinois_appearance_additional.enabled = False
-#  illinois_appearance_additional_2.enabled = False
-#  illinois_appearance_additional_3.enabled = False
-#  illinois_appearance_additional_blank.enabled = False
-#
-#  if delivery_parties.number() < 3:
-#    illinois_appearance_attachment.enabled = True
-#    illinois_appearance_instructions.enabled = True
-#  elif delivery_parties.number() < 5:
-#    illinois_appearance_attachment.enabled = True
-#    illinois_appearance_instructions.enabled = True
-#    illinois_appearance_additional.enabled = True
-#  elif delivery_parties.number() < 7:
-#    illinois_appearance_attachment.enabled = True
-#    illinois_appearance_instructions.enabled = True
-#    illinois_appearance_additional.enabled = True
-#    illinois_appearance_additional_2.enabled = True
-#  elif delivery_parties.number() < 9:
-#    illinois_appearance_attachment.enabled = True
-#    illinois_appearance_instructions.enabled = True
-#    illinois_appearance_additional.enabled = True
-#    illinois_appearance_additional_2.enabled = True
-#    illinois_appearance_additional_3.enabled = True
-#  else:
-#    illinois_appearance_attachment.enabled = True
-#    illinois_appearance_instructions.enabled = True
-#    illinois_appearance_additional.enabled = True
-#    illinois_appearance_additional_2.enabled = True
-#    illinois_appearance_additional_3.enabled = True
-#    illinois_appearance_additional_blank.enabled = True
-   
 ---
 objects:
   - al_user_bundle: ALDocumentBundle.using(elements=[appearance_instructions, appearance_single_pdf_bundle, jury_request_bundle, answer_instructions, answer_bundle, affirmative_defenses, counterclaims], filename="appearance_and_answer.pdf", title="All forms")
@@ -2247,8 +2179,6 @@ attachment:
       - "claim_1_details": ${ claims[1].details }
       - "claim_2_name": ${ claims[2].name.text }
       - "claim_2_details": ${ claims[2].details }
-      
-      
       
 ############### Review page
 ---
