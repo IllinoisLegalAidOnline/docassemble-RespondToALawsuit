@@ -668,7 +668,7 @@ id: any other paragraphs
 question: |
   Are there any other paragraphs to respond to?
 subquestion: |
-  % if answer_responses.number() >= 34:
+  % if answer_responses.number() >= 15:
   **Reminder:** This program can respond to up to 25 paragraphs.
 
   % endif
@@ -2501,7 +2501,13 @@ question: |
 subquestion: |
   ${ answer_responses.table }
 
+  % if answer_responses.number() >= 15:
+  **Reminder:** This program can respond to up to 25 paragraphs.
+  
+  % endif
+  % if answer_responses.number_gathered() < 25:
   ${ answer_responses.add_action() }
+  % endif
 ---
 table: answer_responses.table
 rows: answer_responses
