@@ -937,15 +937,17 @@ code: |
 ---
 reconsider: True
 code: |
-  delivery_parties = DAList("delivery_parties", elements = other_parties + users[1:])
+  delivery_parties = ALPeopleList("delivery_parties", elements = other_parties + users[1:])  
 # changed order to keep it a DAList
+# old code below
+# delivery_parties = DAList("delivery_parties", elements = other_parties + users[1:])
 ---
 id: delivery intro
 continue button field: delivery_intro
 question: |
   Send your forms to all other parties
 subquestion: |
-  These are the other parties in this case: ${comma_and_list(delivery_parties)}.
+  These are the other parties in this case: ${comma_and_list( delivery_parties.full_names() )}.
 
   You must send a copy of your forms to each of them.
 
