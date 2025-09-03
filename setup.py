@@ -44,7 +44,7 @@ def find_package_data(where='.', package='', exclude=standard_exclude, exclude_d
     return out
 
 setup(name='docassemble.RespondToALawsuit',
-      version='1.1.18',
+      version='1.1.19',
       description=('Respond to a lawsuit'),
       long_description='# docassemble.RespondToALawsuit\r\n\r\nRespond to a lawsuit\r\n\r\n## Author\r\n\r\nMatt Newsted, mnewsted@illinoislegalaid.org\r\n\r\n',
       long_description_content_type='text/markdown',
@@ -53,7 +53,7 @@ setup(name='docassemble.RespondToALawsuit',
       license='The MIT License (MIT)',
       url='https://www.illinoislegalaid.org',
       packages=find_namespace_packages(),
-      install_requires=['docassemble.AssemblyLine>=3.2.0', 'docassemble.ILAO>=1.0.99'],
+      install_requires=[],
       zip_safe=False,
       package_data=find_package_data(where='docassemble/RespondToALawsuit/', package='docassemble.RespondToALawsuit'),
      )
