@@ -945,7 +945,7 @@ continue button field: delivery_intro
 question: |
   Send your forms to all other parties
 subquestion: |
-  These are the other parties in this case: ${comma_and_list(delivery_parties.full_names())}.
+  These are the other parties in this case: ${comma_and_list(delivery_parties)}.
 
   You must send a copy of your forms to each of them.
 
