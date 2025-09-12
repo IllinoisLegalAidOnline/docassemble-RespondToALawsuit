@@ -125,6 +125,7 @@ code: |
   nav.set_section('section_download')
   forms_assembling
   snapshot_forms
+  docs_delivered()
   get_docs_screen
 ---
 code: |
@@ -670,7 +671,7 @@ question: |
   Are there any other paragraphs to respond to?
 subquestion: |
   % if answer_responses.number() >= 20:
-  **Reminder:** This program can respond to up to 30 paragraphs.
+  **Note:** This program can respond to up to 30 paragraphs.
 
   % endif
   So far you have responded to paragraphs and subparagraphs:
@@ -764,25 +765,25 @@ subquestion: |
 fields:
   - Statements you admit are true:: unlabeled_admit
     input type: area
-    rows: 12
-    maxlength: 600
+    rows: 14
+    maxlength: 650
     help: |
       The form has limited space. You can fit more words if you don't break lines with the Enter or Return key.
   - note: |
-      The form has room for about **600 characters** including spaces.
+      The form has room for about **650 characters** including spaces.
   - Are there more statements you admit are true?: more_admit
     datatype: yesnoradio
   - More statements you admit are true:: unlabeled_admit_more
     input type: area
-    rows: 12
-    maxlength: 600
+    rows: 14
+    maxlength: 650
     show if:
       variable: more_admit
       is: True
     help: |
       The form has limited space. You can fit more words if you don't break lines with the Enter or Return key. 
   - note: |
-      The form has room for about **600 characters** including spaces.
+      The form has room for about **650 characters** including spaces.
     show if:
       variable: more_admit
       is: True
@@ -798,25 +799,25 @@ subquestion: |
 fields:
   - Statements you do not know are true:: unlabeled_idk
     input type: area
-    rows: 12
-    maxlength: 600
+    rows: 14
+    maxlength: 650
     help: |
       The form has limited space. You can fit more words if you don't break lines with the Enter or Return key. 
   - note: |
-      The form has room for about **600 characters** including spaces.
+      The form has room for about **650 characters** including spaces.
   - Are there more statements you do not know are true or false?: more_idk
     datatype: yesnoradio
   - More statements you do not know are true:: unlabeled_idk_more
     input type: area
-    rows: 12
-    maxlength: 600
+    rows: 14
+    maxlength: 650
     show if:
       variable: more_idk
       is: True
     help: |
       The form has limited space. You can fit more words if you don't break lines with the Enter or Return key.
   - note: |
-      The form has room for about **600 characters** including spaces.
+      The form has room for about **650 characters** including spaces.
     show if:
       variable: more_idk
       is: True      
@@ -853,12 +854,12 @@ fields:
     maxlength: 75
   - Facts that support your defense:: defenses[i].details
     input type: area
-    rows: 11
-    maxlength: 625
+    rows: 14
+    maxlength: 675
     help: |
       The form has limited space. You can fit more words if you don't break lines with the Enter or Return key. 
   - note: |
-      The form has room for about **625 characters** including spaces.
+      The form has room for about **675 characters** including spaces.
 ---
 id: any other defenses
 question: |
@@ -916,20 +917,20 @@ subquestion: |
 fields:
   - State what you are claiming and the facts that support your claims:: claims[i].name.text
     input type: area
-    rows: 12
-    maxlength: 600
+    rows: 14
+    maxlength: 675
     help: |
       The form has limited space. You can fit more words if you don't break lines with the Enter or Return key.
   - note: |
-      The form has room for about **600 characters** including spaces.
+      The form has room for about **675 characters** including spaces.
   - List what you want the court to order:: claims[i].details
     input type: area
-    rows: 7
-    maxlength: 300
+    rows: 9
+    maxlength: 350
     help: |
       The form has limited space. You can fit more words if you don't break lines with the Enter or Return key. 
   - note: |
-      The form has room for about **300 characters** including spaces.
+      The form has room for about **350 characters** including spaces.
 ---
 id: any other counterclaims
 question: |
@@ -1344,7 +1345,7 @@ question: |
 subquestion: |
   
   Your forms are ready. View and download your forms below. Click **:edit: Make changes** to fix any mistakes.
-
+  
   This program **does not file** your Appearance and Answer forms with the court or deliver them to other parties in your case. You will need to do this yourself. Learn about [**e-filing in Illinois**](https://www.illinoiscourts.gov/eservices/information-for-filers-without-lawyers).
 
   ${ action_button_html(url_action('review_answers'), label=':edit: Make changes', color='success', size="md") }
@@ -1381,6 +1382,24 @@ content: |
   Thanks for using ILAO Easy Forms!
   
   [Illinois Legal Aid Online](https://www.illinoislegalaid.org)
+---
+sets: docs_list
+code: |
+  def docs_delivered():
+    docs_list = ["Appearance"]
+    
+    if trial_with != "Judge only":
+      docs_list.append("Jury Request")
+    
+    docs_list.append("Answer or Response")
+    
+    if has_defenses:
+      docs_list.append("Affirmative Defenses")
+    
+    if has_counterclaims:
+      docs_list.append("Counterclaims")
+    
+    return docs_list
 ---
 objects:
   - appearance_attachment: ALDocument.using(title="Appearance", filename="appearance.pdf", has_addendum=False)
@@ -1530,8 +1549,8 @@ attachment:
       - "user_mail_address_one_line__2": ${ users[0].address.on_one_line(bare=True) }
       - "user_phone_number__1": ${ phone_number_formatted(users[0].phone_number) }
       - "user_phone_number__2": ${ phone_number_formatted(users[0].phone_number) }
-      - "user_email": ${ users[0].email if users[0].has_email_address else '' }
-      - "user_email__2": ${ users[0].email if users[0].has_email_address else '' }
+      - "user_email": ${ users[0].email if users[0].email_notice else '' }
+      - "user_email__2": ${ users[0].email if users[0].email_notice else '' }
       - "case_number__1": ${ case_number }
       - "case_number__2": ${ case_number }
       - "case_number__3": ${ case_number }
@@ -1651,18 +1670,12 @@ attachment:
       - "user__2": ${ users[0].name_full() }
       - "user_mail_address_one_line__1": ${ users[0].address.on_one_line(bare=True) }
       - "user_phone_number__1": ${ phone_number_formatted(users[0].phone_number) }
-      - "user_email": ${ users[0].email if users[0].has_email_address else '' }
+      - "user_email": ${ users[0].email if users[0].email_notice else '' }
       - "case_number__1": ${ case_number }
       - "case_number__2": ${ case_number }
       - "e_sign_name__1": ${ users[0].name_full() if e_signature else '' }
       - "for_self": ${True}
-      - "document_name": |
-          % if trial_with == "Judge only":
-          ${"Appearance"}
-          % else:
-          ${"Appearance and Jury Request"}
-          % endif
-
+      - "document_name": ${ comma_and_list( docs_delivered() )}
       - "delivery_party1_name_full": | 
           % if x.is_represented:
           ${ x.lawyer.name_full() } (lawyer for ${ x.name_full() })
@@ -1760,8 +1773,8 @@ attachment:
       - "user_mail_address_one_line__2": ${ users[0].address.on_one_line(bare=True) }
       - "user_phone_number__1": ${ phone_number_formatted(users[0].phone_number) }
       - "user_phone_number__2": ${ phone_number_formatted(users[0].phone_number) }
-      - "user_email": ${ users[0].email if users[0].has_email_address else '' }
-      - "user_email__2": ${ users[0].email if users[0].has_email_address else '' }
+      - "user_email": ${ users[0].email if users[0].email_notice else '' }
+      - "user_email__2": ${ users[0].email if users[0].email_notice else '' }
       - "case_number__1": ${ case_number }
       - "case_number__2": ${ case_number }
       - "case_number__3": ${ case_number }
@@ -2060,9 +2073,41 @@ attachment:
   editable: False
   pdf template file: answer_additional.pdf
   fields:
+      - "trial_court_county": ${ trial_court.address.county }
+      - "plaintiffs": |
+          % if in_re_check:
+          ${ in_re_label }
+          % else:
+          % if user_ask_role == 'plaintiff':
+          % if users.number() > 1:
+          ${ users[0].name_full() }, et al.
+          % else:
+          ${ users[0].name_full() }
+          % endif
+          % else:
+          % if other_parties.number() > 1:
+          ${ other_parties[0].name_full() }, et al.
+          % else:
+          ${ other_parties[0].name_full() }
+          % endif
+          % endif
+          % endif
+      
+      - "defendants": |
+          % if in_re_check:
+          ${ "" }
+          % else:
+          % if user_ask_role == 'plaintiff':
+          ${ other_parties.full_names() } 
+          % else:
+          ${ users.full_names() }
+          % endif
+          % endif
       - "case_number__1": ${ case_number }
+      - "case_number__2": ${ case_number }
 
-      - "is_additional_answer": ${ True if answer_responses.number() > 15 and complaint_labeled else '' }
+      - "complaint_labeled_yes": ${ complaint_labeled }
+
       - "para15": ${ answer_responses[15].para if complaint_labeled else '' }
       - "sub15": ${ answer_responses[15].sub if complaint_labeled else '' }
       - "admit15": ${ True if answer_responses[15].response == "Admit" and complaint_labeled else False }
@@ -2114,10 +2159,40 @@ attachment:
       - "deny24": ${ True if answer_responses[24].response == "Deny" and complaint_labeled else False }
       - "idk24": ${ True if answer_responses[24].response == "Do not know" and complaint_labeled else False }
 
+      - "para25": ${ answer_responses[25].para if complaint_labeled else '' }
+      - "sub25": ${ answer_responses[25].sub if complaint_labeled else '' }
+      - "admit25": ${ True if answer_responses[25].response == "Admit" and complaint_labeled else False }
+      - "deny25": ${ True if answer_responses[25].response == "Deny" and complaint_labeled else False }
+      - "idk25": ${ True if answer_responses[25].response == "Do not know" and complaint_labeled else False }
 
+      - "para26": ${ answer_responses[26].para if complaint_labeled else '' }
+      - "sub26": ${ answer_responses[26].sub if complaint_labeled else '' }
+      - "admit26": ${ True if answer_responses[26].response == "Admit" and complaint_labeled else False }
+      - "deny26": ${ True if answer_responses[26].response == "Deny" and complaint_labeled else False }
+      - "idk26": ${ True if answer_responses[26].response == "Do not know" and complaint_labeled else False }
+
+      - "para27": ${ answer_responses[27].para if complaint_labeled else '' }
+      - "sub27": ${ answer_responses[27].sub if complaint_labeled else '' }
+      - "admit27": ${ True if answer_responses[27].response == "Admit" and complaint_labeled else False }
+      - "deny27": ${ True if answer_responses[27].response == "Deny" and complaint_labeled else False }
+      - "idk27": ${ True if answer_responses[27].response == "Do not know" and complaint_labeled else False }
+
+      - "para28": ${ answer_responses[28].para if complaint_labeled else '' }
+      - "sub28": ${ answer_responses[28].sub if complaint_labeled else '' }
+      - "admit28": ${ True if answer_responses[28].response == "Admit" and complaint_labeled else False }
+      - "deny28": ${ True if answer_responses[28].response == "Deny" and complaint_labeled else False }
+      - "idk28": ${ True if answer_responses[28].response == "Do not know" and complaint_labeled else False }
+
+      - "para29": ${ answer_responses[29].para if complaint_labeled else '' }
+      - "sub29": ${ answer_responses[29].sub if complaint_labeled else '' }
+      - "admit29": ${ True if answer_responses[29].response == "Admit" and complaint_labeled else False }
+      - "deny29": ${ True if answer_responses[29].response == "Deny" and complaint_labeled else False }
+      - "idk29": ${ True if answer_responses[29].response == "Do not know" and complaint_labeled else False }
+
+      - "complaint_labeled_no": ${ not complaint_labeled }      
       - "unlabeled_admit_more": ${ unlabeled_admit_more if not complaint_labeled and more_admit else '' }
       - "unlabeled_idk_more": ${ unlabeled_idk_more if not complaint_labeled and more_idk else '' }
-      - "is_additional_unlabeled_answer": ${ True if not complaint_labeled and (more_admit == True or more_idk == True) else '' }
+
 ---
 attachment:
   variable name: affirmative_defenses[i]
