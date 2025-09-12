@@ -84,7 +84,7 @@ code: |
   answer_intro
   if complaint_labeled:
     answer_responses.gather()
-    if answer_responses.number() == 25:
+    if answer_responses.number() == 30:
       max_paragraphs
   else:
     unlabeled_intro
@@ -537,15 +537,6 @@ content: |
   
   Use the [**Illinois Court's website**](https://www.illinoiscourts.gov/courts-directory/interactive-map/by-court-type) to look up your local circuit clerk. 
 ---
-id: e-filing a jury demand
-continue button field: jury_demand_filing_info
-question: |
-  E-filing a jury demand
-subquestion: |
-  If you are e-filing your forms, you may need to e-file the *Appearance* form as two separate documents: once as an Appearance and once as a Jury Demand.
-  
-  Check with [**Illinois Court Help**](https://ilcourthelp.gov) or call (833) 411-1121. You can also ask your local circuit clerk.
----
 id: your contact information
 question: |
   What is your contact information?
@@ -601,7 +592,7 @@ subquestion: |
     <p>By signing your <i>Appearance</i>, <i>Jury Request</i> (if any), and <i>Answer or Response</i> forms, you are certifying that:</p>
     <p><ul>
       <li>You read the documents,</li>
-      <li>You believe they are true and correct, and</li>
+      <li>You have been informed and believe they are true and correct, and</li>
       <li>You are not filing them to cause delay or for another bad reason.</li>
     </ul></p>
     <p>See the <a href="https://ilcourtsaudio.blob.core.windows.net/antilles-resources/resources/9ce1fce9-895f-463e-b87d-f9b7631f8fde/Rule%20137.pdf"><b>Illinois Supreme Court Rule 137</b></a> for more information.</p>
@@ -635,7 +626,9 @@ subquestion: |
   * **{Deny}**, or
   * **{Do not know}**.
   
-  The forms made by this program allow you to respond to up to 25 labeled paragraphs and subparagraphs. If you need to respond to more, download a blank [**Additional Paragraphs for Answer or Response**](https://www.illinoiscourts.gov/documents-and-forms/approved-forms/circuit-forms/answer-response). 
+  The forms made by this program allow you to respond to up to 30 labeled paragraphs and subparagraphs. If you need to respond to more, download a blank [**Additional Paragraphs for Answer or Response**](https://www.illinoiscourts.gov/documents-and-forms/approved-forms/circuit-forms/answer-response).
+
+  **Note:** You do not need to explain why you admit, deny, or do not know in this section. You can explain your reasons and present your evidence later in the case.
 terms:
   Admit: |
     You agree that **all** of the statements in the paragraph are true.
@@ -651,6 +644,8 @@ sets:
   - answer_responses[i].response
 question: |
   What is your response to the ${ ordinal(i) } paragraph?
+subquestion: |
+  You do not need to explain why you admit, deny, or do not know in this section. You can explain your reasons and present your evidence later in the case.
 fields:
   - Paragraph number: answer_responses[i].para
     maxlength: 10
@@ -674,8 +669,8 @@ id: any other paragraphs
 question: |
   Are there any other paragraphs to respond to?
 subquestion: |
-  % if answer_responses.number() >= 15:
-  **Reminder:** This program can respond to up to 25 paragraphs.
+  % if answer_responses.number() >= 20:
+  **Reminder:** This program can respond to up to 30 paragraphs.
 
   % endif
   So far you have responded to paragraphs and subparagraphs:
@@ -695,7 +690,7 @@ code: |
 depends on:
   - answer_responses
 code: |
-  if answer_responses.number() == 25:
+  if answer_responses.number() == 30:
     answer_responses.there_is_another = False
 ---
 id: maximum paragraphs entered
@@ -748,7 +743,7 @@ subquestion: |
   
   It is easiest to **{deny}** most statements in the Complaint or Petition, and list only the statements that you **{admit}** are true or **{do not know}** if they are true.
   
-  The next screens will help you do that.
+  The next screens will help you do that. 
 terms:
   admit: |
     You agree that the statement is true.
@@ -764,13 +759,17 @@ subquestion: |
   If you know that a statement in the Complaint or Petition is **true**, list it here.
   
   On the next screen, you can list the statements that you don't know if they are true or false.
+
+  **Note:** You do not need to explain why you admit statements are true in this section. You can explain your reasons and present your evidence later in the case.  
 fields:
   - Statements you admit are true:: unlabeled_admit
     input type: area
     rows: 12
     maxlength: 600
     help: |
-      The form has limited space. You can fit more words if you don't break lines with the Enter or Return key. 
+      The form has limited space. You can fit more words if you don't break lines with the Enter or Return key.
+  - note: |
+      The form has room for about **600 characters** including spaces.
   - Are there more statements you admit are true?: more_admit
     datatype: yesnoradio
   - More statements you admit are true:: unlabeled_admit_more
@@ -782,12 +781,20 @@ fields:
       is: True
     help: |
       The form has limited space. You can fit more words if you don't break lines with the Enter or Return key. 
+  - note: |
+      The form has room for about **600 characters** including spaces.
+    show if:
+      variable: more_admit
+      is: True
+      
 ---
 id: unableled statements idk
 question: |
   Which statements in the Complaint or Petition do you not know if they are true?
 subquestion: |
   If you **do not know** if a statement in the Complaint or Petition is true or false, list it here. This includes statements you do not have enough information about.
+
+  **Note:** You do not need to explain why you do not know if statements are true in this section. You can explain your reasons and present your evidence later in the case.  
 fields:
   - Statements you do not know are true:: unlabeled_idk
     input type: area
@@ -795,6 +802,8 @@ fields:
     maxlength: 600
     help: |
       The form has limited space. You can fit more words if you don't break lines with the Enter or Return key. 
+  - note: |
+      The form has room for about **600 characters** including spaces.
   - Are there more statements you do not know are true or false?: more_idk
     datatype: yesnoradio
   - More statements you do not know are true:: unlabeled_idk_more
@@ -805,7 +814,12 @@ fields:
       variable: more_idk
       is: True
     help: |
-      The form has limited space. You can fit more words if you don't break lines with the Enter or Return key. 
+      The form has limited space. You can fit more words if you don't break lines with the Enter or Return key.
+  - note: |
+      The form has room for about **600 characters** including spaces.
+    show if:
+      variable: more_idk
+      is: True      
 ---
 id: affirmative defenses intro
 continue button field: defenses_intro
@@ -843,6 +857,8 @@ fields:
     maxlength: 625
     help: |
       The form has limited space. You can fit more words if you don't break lines with the Enter or Return key. 
+  - note: |
+      The form has room for about **625 characters** including spaces.
 ---
 id: any other defenses
 question: |
@@ -903,13 +919,17 @@ fields:
     rows: 12
     maxlength: 600
     help: |
-      The form has limited space. You can fit more words if you don't break lines with the Enter or Return key. 
+      The form has limited space. You can fit more words if you don't break lines with the Enter or Return key.
+  - note: |
+      The form has room for about **600 characters** including spaces.
   - List what you want the court to order:: claims[i].details
     input type: area
     rows: 7
     maxlength: 300
     help: |
       The form has limited space. You can fit more words if you don't break lines with the Enter or Return key. 
+  - note: |
+      The form has room for about **300 characters** including spaces.
 ---
 id: any other counterclaims
 question: |
@@ -2151,6 +2171,7 @@ attachment:
       - "defense_1_details": ${ defenses[1].details }
       - "defense_2_name": ${ defenses[2].name.text }
       - "defense_2_details": ${ defenses[2].details }
+      - "for_self": ${True}
 ---
 attachment:
   variable name: counterclaims[i]
@@ -2204,6 +2225,7 @@ attachment:
       - "claim_1_details": ${ claims[1].details }
       - "claim_2_name": ${ claims[2].name.text }
       - "claim_2_details": ${ claims[2].details }
+      - "for_self": ${True}
       
 ############### Review page
 ---
@@ -2525,11 +2547,11 @@ question: |
 subquestion: |
   ${ answer_responses.table }
 
-  % if answer_responses.number() >= 15:
-  **Reminder:** This program can respond to up to 25 paragraphs.
+  % if answer_responses.number() >= 20:
+  **Reminder:** This program can respond to up to 30 paragraphs.
   
   % endif
-  % if answer_responses.number_gathered() < 25:
+  % if answer_responses.number_gathered() < 30:
   ${ answer_responses.add_action() }
   % endif
 ---
