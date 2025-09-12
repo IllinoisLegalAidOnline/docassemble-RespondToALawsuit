@@ -1876,7 +1876,6 @@ attachment:
       - "case_number__2": ${ case_number }
       - "case_number__3": ${ case_number }
       - "case_number__4": ${ case_number }
-      - "case_number__5": ${ case_number }
       - "e_sign_name__1": ${ users[0].name_full() if e_signature else '' }
       - "e_sign_name__2": ${ users[0].name_full() if e_signature else '' }
       
@@ -1977,64 +1976,61 @@ attachment:
           % else:
           Answer or Response
           % endif
-      - "answer_pod_docs__2": |
-          % if has_defenses and has_counterclaims:
-          Answer or Response, Affirmative Defenses, and Counterclaims
-          % elif has_defenses:
-          Answer or Response and Affirmative Defenses
-          % elif has_counterclaims:
-          Answer or Response and Counterclaims
-          % else:
-          Answer or Response
-          % endif
-          
+
       - "delivery_party1_name_full": | 
           % if delivery_parties[0].is_represented:
-          ${ delivery_parties[0].lawyer.name_full() }, (lawyer for ${ delivery_parties[0].name_full() })
+          ${ delivery_parties[0].lawyer.name_full() } (lawyer for ${ delivery_parties[0].name_full() })
           % else:
           ${ delivery_parties[0].name_full() }
           % endif
       - "delivery_party1_mail_address_on_one_line": ${ delivery_parties[0].address.on_one_line(bare=True) }
       - "delivery_party1_email": ${ delivery_parties[0].delivery_email if delivery_parties[0].knows_delivery_method else '' }
-      - "is_delivery_party1_hand_yes": ${ delivery_parties[0].hand_delivery if delivery_parties[0].knows_delivery_method else '' }
-      - "is_delivery_party1_mail_yes": ${ delivery_parties[0].mail_delivery if delivery_parties[0].knows_delivery_method else '' }
+      - "delivery_party1_email_efsp": ${ delivery_parties[0].delivery_efsp_email if delivery_parties[0].knows_delivery_method else '' }
+      - "is_delivery_party1_hand_yes": ${ delivery_parties[0].hand_delivery if delivery_parties[0].knows_delivery_method and delivery_parties[0].physical_delivery else '' }
+      - "is_delivery_party1_mail_yes": ${ delivery_parties[0].mail_delivery if delivery_parties[0].knows_delivery_method and delivery_parties[0].physical_delivery else '' }
       - "is_delivery_party1_efm_yes": ${ delivery_parties[0].efm_delivery if delivery_parties[0].knows_delivery_method else '' }
       - "is_delivery_party1_email_yes": ${ delivery_parties[0].email_delivery if delivery_parties[0].knows_delivery_method else '' }
       - "delivery_party1_date": ${ delivery_parties[0].delivery_date if delivery_parties[0].knows_delivery_method and delivery_parties[0].knows_delivery_date else '' }
       - "delivery_party1_time": ${ format_time(delivery_parties[0].delivery_time, format='h:mm a') if delivery_parties[0].knows_delivery_method and delivery_parties[0].knows_delivery_time else '' }
       
-      - "is_delivery_party1_electronic": ${ True if delivery_parties[0].knows_delivery_method and ( delivery_parties[0].efm_delivery or delivery_parties[0].email_delivery ) else '' }
-      - "is_delivery_party1_not_electronic": ${ True if delivery_parties[0].knows_delivery_method and ( delivery_parties[0].mail_delivery or delivery_parties[0].hand_delivery or delivery_parties[0].jail_delivery ) else '' }
-      - "delivery_party1_mail_city": ${ delivery_parties[0].delivery_mail_city if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery else '' }
-      - "delivery_party1_mail_state": ${ state_name(delivery_parties[0].delivery_mail_state) if delivery_parties[0].knows_delivery_method and delivery_parties[0].mail_delivery else '' }
-      - "delivery_party1_hand_address": ${ delivery_parties[0].hand_delivery_address.on_one_line(bare=True) if delivery_parties[0].knows_delivery_method and delivery_parties[0].hand_delivery else '' }
-      - "is_delivery_party1_jail_yes": ${ True if delivery_parties[0].knows_delivery_method and delivery_parties[0].jail_delivery else '' }
-      - "delivery_party1_jail_name": ${ delivery_parties[0].delivery_jail_name if delivery_parties[0].knows_delivery_method and delivery_parties[0].jail_delivery else '' }
-      - "delivery_party2_name_full": | 
-          % if delivery_parties[1].is_represented:
-          ${ delivery_parties[1].lawyer.name_full() }, (lawyer for ${ delivery_parties[1].name_full() })
+      - "is_delivery_party1_not_electronic": ${ True if delivery_parties[0].knows_delivery_method and delivery_parties[0].physical_delivery else '' }
+      - "delivery_party1_mail_location": |
+          % if delivery_parties[0].knows_delivery_method and delivery_parties[0].physical_delivery and delivery_parties[0].mail_delivery:
+          % if delivery_parties[0].delivery_mail_address != "" and delivery_parties[0].delivery_mail_city != "" and delivery_parties[0].delivery_mail_state != "":
+          ${delivery_parties[0].delivery_mail_address }, ${delivery_parties[0].delivery_mail_city}, ${ state_name(delivery_parties[0].delivery_mail_state) }
+          % elif delivery_parties[0].delivery_mail_address != "" and delivery_parties[0].delivery_mail_city != "":
+          ${delivery_parties[0].delivery_mail_address }, ${delivery_parties[0].delivery_mail_city}
+          % elif delivery_parties[0].delivery_mail_address != "" and delivery_parties[0].delivery_mail_state != "":
+          ${delivery_parties[0].delivery_mail_address }, ${ state_name(delivery_parties[0].delivery_mail_state) }
+          % elif delivery_parties[0].delivery_mail_city != "" and delivery_parties[0].delivery_mail_state != "":
+          ${delivery_parties[0].delivery_mail_city}, ${ state_name(delivery_parties[0].delivery_mail_state) }
+          % elif delivery_parties[0].delivery_mail_address != "":
+          ${delivery_parties[0].delivery_mail_address}
+          % elif delivery_parties[0].delivery_mail_city != "":
+          ${delivery_parties[0].delivery_mail_city}
           % else:
-          ${ delivery_parties[1].name_full() }
+          ${state_name(delivery_parties[0].delivery_mail_state)}
           % endif
-      - "delivery_party2_mail_address_on_one_line": ${ delivery_parties[1].address.on_one_line(bare=True) }
-      - "delivery_party2_email": ${ delivery_parties[1].delivery_email if delivery_parties[1].knows_delivery_method else '' }
-      - "is_delivery_party2_hand_yes": ${ delivery_parties[1].hand_delivery if delivery_parties[1].knows_delivery_method else '' }
-      - "is_delivery_party2_mail_yes": ${ delivery_parties[1].mail_delivery if delivery_parties[1].knows_delivery_method else '' }
-      - "is_delivery_party2_efm_yes": ${ delivery_parties[1].efm_delivery if delivery_parties[1].knows_delivery_method else '' }
-      - "is_delivery_party2_email_yes": ${ delivery_parties[1].email_delivery if delivery_parties[1].knows_delivery_method else '' }
-      - "delivery_party2_date": ${ delivery_parties[1].delivery_date if delivery_parties[1].knows_delivery_method and delivery_parties[1].knows_delivery_date else '' }
-      - "delivery_party2_time": ${ format_time(delivery_parties[1].delivery_time, format='h:mm a') if delivery_parties[1].knows_delivery_method and delivery_parties[1].knows_delivery_time else '' }
-      
-      - "is_delivery_party2_electronic": ${ True if delivery_parties[1].knows_delivery_method and ( delivery_parties[1].efm_delivery or delivery_parties[1].email_delivery ) else '' }
-      - "is_delivery_party2_not_electronic": ${ True if delivery_parties[1].knows_delivery_method and ( delivery_parties[1].mail_delivery or delivery_parties[1].hand_delivery or delivery_parties[1].jail_delivery ) else '' }
-      - "delivery_party2_mail_city": ${ delivery_parties[1].delivery_mail_city if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery else '' }
-      - "delivery_party2_mail_state": ${ state_name(delivery_parties[1].delivery_mail_state) if delivery_parties[1].knows_delivery_method and delivery_parties[1].mail_delivery else '' }
-      - "delivery_party2_hand_address": ${ delivery_parties[1].hand_delivery_address.on_one_line(bare=True) if delivery_parties[1].knows_delivery_method and delivery_parties[1].hand_delivery else '' }
-      - "is_delivery_party2_jail_yes": ${ True if delivery_parties[1].knows_delivery_method and delivery_parties[1].jail_delivery else '' }
-      - "delivery_party2_jail_name": ${ delivery_parties[1].delivery_jail_name if delivery_parties[1].knows_delivery_method and delivery_parties[1].jail_delivery else '' }
+          % else:
+          ${ "" }
+          % endif
+      - "is_delivery_party1_jail_yes": ${ True if delivery_parties[0].knows_delivery_method and delivery_parties[0].physical_delivery and delivery_parties[0].jail_delivery else '' }
+      - "delivery_party1_jail_name": |
+          % if delivery_parties[0].knows_delivery_method and delivery_parties[0].physical_delivery and delivery_parties[0].jail_delivery:
+          % if delivery_parties[0].delivery_jail_name != "" and delivery_parties[0].jail_delivery_address.address != "" and delivery_parties[0].jail_delivery_address.city != "" and delivery_parties[0].jail_delivery_address.state != "":
+          ${ delivery_parties[0].delivery_jail_name }, ${ delivery_parties[0].jail_delivery_address.on_one_line(bare=True)}
+          % elif delivery_parties[0].delivery_jail_name == "":
+          ${ delivery_parties[0].jail_delivery_address.on_one_line(bare=True)}
+          % else:
+          ${ delivery_parties[0].delivery_jail_name }
+          % endif
+          % else:
+          ${""}
+          % endif
+      - "for_self": ${True}
+      - "for_self_2": ${True}
 
-      - "is_additional_proof_delivery_yes": ${ delivery_parties.number() > 2 }
-
+      - "is_additional_proof_delivery_yes": ${ delivery_parties.number() > 1 }
 ---
 attachment:
   variable name: answer_additional[i]
