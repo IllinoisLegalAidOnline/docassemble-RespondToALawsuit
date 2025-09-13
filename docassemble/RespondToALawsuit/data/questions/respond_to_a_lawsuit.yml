@@ -940,7 +940,7 @@ subquestion: |
   You can enter up to 3 counterclaims. So far you have told us about:
   
   % for claim in claims:
-   * ${claim.name.text}
+   * ${claim.name.text.replace("\n", " ").replace("\r", " ")}
   % endfor
 fields:
   - "Add another counterclaim?": claims.there_is_another
@@ -2415,7 +2415,7 @@ review:
       **Counterclaims: (Edit to change details)**
 
       % for my_var in claims:
-        * ${ my_var.name.text }
+        * ${ my_var.name.text.replace("\n", " ").replace("\r", " ") }
       % endfor
     show if: has_counterclaims
   - Edit: e_signature
@@ -2795,7 +2795,7 @@ review:
       **Counterclaims: (Edit to change details)**
 
       % for my_var in claims:
-        * ${ my_var.name.text }
+        * ${ my_var.name.text.replace("\n", " ").replace("\r", " ") }
       % endfor
     show if: has_counterclaims
 ---
