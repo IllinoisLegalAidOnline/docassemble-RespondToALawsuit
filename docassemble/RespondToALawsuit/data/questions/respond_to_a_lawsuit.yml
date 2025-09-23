@@ -1242,6 +1242,7 @@ fields:
   - Date: x.delivery_date
     datatype: date
     required: False
+    min: ${ today().minus(years=1) }
     max: ${ today().plus(years=1) }
   - Time: x.delivery_time
     datatype: time
@@ -1277,9 +1278,6 @@ question: |
 subquestion: |
   On the *Appearance*, you can tell the court which pronouns you use.
 fields:
-  - I prefer not to answer.: pronouns_none
-    datatype: yesno
-    disable others: True
   - Pronouns (optional): pronouns
     datatype: checkboxes
     none of the above: False
@@ -1294,6 +1292,9 @@ fields:
     show if:
       variable: pronouns["Other"]
       is: True
+  - I prefer not to answer.: pronouns_none
+    datatype: yesno
+    disable others: True
 validation code: |
   if pronouns_none == False and pronouns.all_false():
     validation_error("Please select at least one.", field="pronouns")
@@ -1304,9 +1305,6 @@ question: |
 subquestion: |
   On the *Appearance*, you can tell the court what prefix you use.
 fields:
-  - I prefer not to answer.: prefix_none
-    datatype: yesno
-    disable others: True
   - Prefix (optional): prefix
     datatype: checkboxes
     none of the above: False
@@ -1322,6 +1320,9 @@ fields:
     show if:
       variable: prefix["Other"]
       is: True
+  - I prefer not to answer.: prefix_none
+    datatype: yesno
+    disable others: True
 validation code: |
   if prefix_none == False and prefix.all_false():
     validation_error("Please select at least one.", field="prefix")
@@ -2540,7 +2541,7 @@ review:
     button: |
       **Do you know how you will deliver your forms to them?**
       ${ word(yesno(x.knows_delivery_method)) }
-  - Edit: x.hand_delivery
+  - Edit: x.physical_delivery
     button: |
       **Delivery by: (Edit to view and change details)**
       
@@ -2550,14 +2551,26 @@ review:
       % if x.email_delivery == True:
         * Email
       % endif
-      % if x.hand_delivery == True:
-        * Hand
+      % if x.physical_delivery == True:
+        * Mail, delivery company, or in-person hand delivery
       % endif
+      % if x.physical_delivery == True:
       % if x.mail_delivery == True:
-        * US mail or a delivery company
+        * US mail or delivery company
       % endif
+      % endif
+      % if x.physical_delivery == True:
+      % if x.hand_delivery == True:
+        * Hand delivery
+      % endif
+      % endif
+      % if x.physical_delivery == True:
       % if x.jail_delivery == True:
         * Mail from prison or jail
+      % endif
+      % endif
+      % if x.efm_delivery != True and x.email_delivery != True and x.physical_delivery != True:
+        * None entered
       % endif
     show if: x.knows_delivery_method
   - Edit: x.delivery_date
