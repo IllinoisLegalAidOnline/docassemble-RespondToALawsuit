@@ -207,8 +207,10 @@ subquestion: |
   After you download your **{Appearance}**, **{Jury Request}**, and **{Answer}** forms, you must file them with the court. This program does not file your forms for you.
   
   If you have **{Affirmative Defenses}** or **{Counterclaims}**, you must file those forms with the court as well.
+
+  You must then send a copy of your filed forms to the other parties in your case. If anyone in the case has a lawyer, you must send it to them instead.
   
-  Read the "How to File an Appearance or Request a Jury" and "How to Answer or Respond to a Court Case" instructions you can download at the end of this program. 
+  For more information, read the "How to File an Appearance or Request a Jury" and "How to Answer or Respond to a Court Case" instructions you can download at the end of this program. 
 ---
 terms:
   - "Jury Request": |
@@ -381,8 +383,10 @@ id: any other users
 question: |
   Is anyone else on your side of this case?
 subquestion: |
+  This information can usually be found near the top of your court papers.  
   % if len(users.elements) > 1:  
-  So far you have told us about ${ users.full_names() }.
+  
+  So far you have told us about ${ fix_punctuation(users.full_names() )}
   % endif  
 fields:
   - "Anyone else?": users.there_is_another
@@ -434,8 +438,10 @@ question: |
   Is there another **plaintiff** or **petitioner** in this case?
   % endif
 subquestion: |
-  % if len(other_parties.elements) >= 1:  
-  So far you have told us about ${ other_parties.full_names() }.
+  This information can usually be found near the top of your court papers.  
+  % if len(other_parties.elements) >= 1:
+  
+  So far you have told us about ${ fix_punctuation(other_parties.full_names() )}
   % endif
 fields:
   - "Anyone else?": other_parties.there_is_another
@@ -603,7 +609,7 @@ subquestion: |
       <li>You understand that making a false statement on the forms is perjury and has penalties provided by law.</li>
     </ul></p>
   <p>This also applies to the <i>Answer or Response</i> if the Complaint or Petition is verified by oath or if you answered "Do Not Know" if specific paragraphs in the Complaint or Petition are true.</p>
-  <p>See the <a href="https://www.ilga.gov/legislation/ilcs/documents/073500050k1-109.htm"><b>Code of Civil Procedure, 735 ILCS 5/1-109</b></a> for more information.</p>
+  <p>See the <a href="https://www.ilga.gov/legislation/ilcs/documents/073500050k1-109.htm"><b>Illinois Code of Civil Procedure, 735 ILCS 5/1-109</b></a> for more information.</p>
   </div>
 fields:
   - "Add e-signature?": e_signature
@@ -971,6 +977,8 @@ subquestion: |
   You must send a copy of your forms to each of them.
 
   If someone in the case has a lawyer, send the forms to their lawyer.
+
+  **Note:** You must send your filed forms to the other parties (or their lawyer) even if they have a No Contact Order against you.
 ---
 id: has lawyer
 generic object: ALIndividual
@@ -1059,6 +1067,8 @@ subquestion: |
   For best results, complete the Proof of Delivery section and send the forms today.
 
   If you do not know this now, you can add it to the Proof of Delivery section of your forms later.
+
+  **Note:** You must send your filed forms to the other parties (or their lawyer) even if they have a No Contact Order against you.
 field: x.knows_delivery_method
 choices:
   - Yes: True

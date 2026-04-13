@@ -44,17 +44,16 @@ def find_package_data(where='.', package='', exclude=standard_exclude, exclude_d
     return out
 
 setup(name='docassemble.RespondToALawsuit',
-      version='1.2.1',
+      version='1.2.2',
       description=('Respond to a lawsuit'),
       long_description='# docassemble.RespondToALawsuit\r\n\r\nRespond to a lawsuit\r\n\r\n## Author\r\n\r\nMatt Newsted, mnewsted@illinoislegalaid.org\r\n\r\n',
       long_description_content_type='text/markdown',
       author='Matt Newsted',
       author_email='mnewsted@illinoislegalaid.org',
-      license='The MIT License (MIT)',
+      license='MIT',
       url='https://www.illinoislegalaid.org',
       packages=find_namespace_packages(),
       install_requires=[],
       zip_safe=False,
       package_data=find_package_data(where='docassemble/RespondToALawsuit/', package='docassemble.RespondToALawsuit'),
      )
-
