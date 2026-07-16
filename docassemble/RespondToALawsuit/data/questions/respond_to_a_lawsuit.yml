@@ -322,7 +322,7 @@ subquestion: |
   
   The judge might order you to file an Answer after you go to court.
 
-  To learn more, read ILAO's article about [**being sued for $10,000 or less**](https://www.illinoislegalaid.org/legal-information/being-sued-10000-or-less).
+  To learn more, read ILAO's [**Small claims basics**](https://www.illinoislegalaid.org/node/190406).
   
   Click **Next** if you want to make your forms now.
 ---
@@ -527,7 +527,7 @@ subquestion: |
 
   **Note:** You do not have a right to a jury trial in every case. There can be an additional fee for a jury trial.
 
-  To learn more, read ILAO's article about [**jury trials and judge trials**](https://www.illinoislegalaid.org/node/178441).
+  To learn more, read ILAO's article about [**civil jury trials and civil bench trials**](https://www.illinoislegalaid.org/node/178441).
 field: trial_with
 choices:
   - A judge: Judge only
